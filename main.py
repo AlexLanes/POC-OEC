@@ -1,5 +1,4 @@
 # std
-import re
 from time import sleep
 from enum import Enum, unique
 # interno
@@ -16,13 +15,14 @@ SENHA = "senha123"
 
 @unique
 class Localizadores(Enum):
+    texto_login = "Login"
     usuario = "input#usernameField"
     senha = "input#passwordField"
     efetuar_login = "button#SubmitButton"
     texto_home = "Home Page"
     navegacao_dclick = "a#AppsNavLink"
-    navegacao_dclick_table = "table.x9t"
     recurso = "a#N55"
+    texto_aplicativo_oracle = "Aplicativos Oracle"
 
 @unique
 class Imagens(Enum):
@@ -68,11 +68,29 @@ def abrir_organizacao_acn():
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_acn.value) )
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_ok.value) )
 
+def abrir_aplicativo_oracle(navegador: Navegador):
+    """Clicar em `AUTOMACAO DCLICK`, `Recursos` e esperar o aplicativo oracle aparecer na barra de tarefa do windows"""
+    Logger.informar("Abrindo o Aplicativo Oracle")
+    # aba "AUTOMACAO DCLICK"
+    elemento = navegador.encontrar("css selector", Localizadores.navegacao_dclick.value)
+    assert elemento != None, "Navegação 'AUTOMACAO DCLICK' não encontrada"
+    elemento.click()
+    # elemento "Recurso"
+    elemento = navegador.encontrar("css selector", Localizadores.recurso.value)
+    assert elemento != None, "Elemento 'Recurso' não encontrado"
+    elemento.click()
+    # aguardar o aplicativo oracle
+    Windows.aguardar_janela(Localizadores.texto_aplicativo_oracle.value, 30)
+    Logger.informar("Aplicativo Oracle aberto")
+
 def efetuar_login(navegador: Navegador):
-    """Efetuar o login no `SITE_EBS`"""
+    """Efetuar o login no `SITE_EBS` e esperar a página Home carregar"""
     Logger.informar("Efetuando o login")
     navegador.pesquisar(SITE_EBS)
-    navegador.aguardar(lambda: "login" in navegador.driver.title.lower())
+    navegador.aguardar(
+        lambda: Localizadores.texto_login.value.lower() in navegador.driver.title.lower(), 
+        f"Texto '{ Localizadores.texto_login.value }' não encontrado no título do navegador"
+    )
     # usuario
     elemento = navegador.encontrar("css selector", Localizadores.usuario.value)
     assert elemento != None, "Campo do usuario não encontrado"
@@ -86,12 +104,16 @@ def efetuar_login(navegador: Navegador):
     assert elemento != None, "Botão para efeutar login não encontrado"
     elemento.click()
     # aguardar a pagina 'Home' carregar
-    navegador.aguardar(lambda: "home page" in navegador.driver.title.lower())
+    navegador.aguardar(
+        lambda: Localizadores.texto_home.value.lower() in navegador.driver.title.lower(), 
+        f"Texto '{ Localizadores.texto_home.value }' não encontrado no título do navegador"
+    )
     Logger.informar("Login efetuado e Home Page carregada")
 
 def main(navegador: Navegador, recursos: list[Recurso], departamentos: list[Departamento]):
     """Fluxo principal"""
-    # efetuar_login(navegador)
+    efetuar_login(navegador)
+    abrir_aplicativo_oracle(navegador)
     # abrir_organizacao_acn()
     # preencher_recurso(recursos[11])
     
@@ -105,8 +127,8 @@ if __name__ == "__main__":
             main(navegador, recursos, departamentos)
         Logger.informar("Finalizado execução com sucesso")
 
-    except TimeoutException as erro:
-        Logger.erro(f"Erro de timeout na espera de alguma condição/elemento: { erro }")
+    except (TimeoutException, TimeoutError) as erro:
+        Logger.erro(f"Erro de timeout na espera de alguma condição/elemento/janela: { erro }")
         exit(1)
     except AssertionError as erro:
         Logger.erro(f"Erro de validação pré-execução de algum passo no fluxo: { erro }")

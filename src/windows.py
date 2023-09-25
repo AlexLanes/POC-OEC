@@ -1,6 +1,5 @@
 # std
-from time import sleep
-from datetime import time
+from time import sleep, time
 from dataclasses import dataclass
 from typing import overload, Literal
 # interno
@@ -120,7 +119,7 @@ class Windows:
 
     @staticmethod
     def aguardar_janela(titulo: str, timeout=10) -> Janela | TimeoutError:
-        """Aguardar até que uma janela de título `titulo` esteja aberta ou TimeoutError"""
+        """Aguardar até que uma janela de título `titulo` esteja aberta ou `TimeoutError` após `timeout` segundos"""
         inicio = time()
         while True:
             if time() - inicio >= timeout: 
