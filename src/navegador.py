@@ -15,7 +15,6 @@ from selenium.webdriver.support.wait import WebDriverWait as Wait
 ESTRATEGIAS = Literal["id", "xpath", "link text", "name", "tag name", "class name", "css selector", "partial link text"]
 CAMINHO_EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
 CAMINHO_DRIVER_IE = rf"{ informacoes_filename()[0] }\..\drivers\IEDriverServer.exe"
-print(CAMINHO_DRIVER_IE)
 
 class Navegador:
     navegador: Ie
