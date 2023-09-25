@@ -12,6 +12,7 @@ import selenium.webdriver.support.expected_conditions as Expect
 from selenium.webdriver.support.wait import WebDriverWait as Wait
 
 ESTRATEGIAS = Literal["id", "xpath", "link text", "name", "tag name", "class name", "css selector", "partial link text"]
+CAMINHO_EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
 
 class Navegador:
     navegador: Ie
@@ -20,7 +21,7 @@ class Navegador:
         self.options = IeOptions()
         self.options.attach_to_edge_chrome = True
         self.options.add_argument("--ignore-certificate-errors")
-        self.options.edge_executable_path = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+        self.options.edge_executable_path = CAMINHO_EDGE
         self.TIMEOUT = 30
     
     def __enter__(self):
