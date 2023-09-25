@@ -1,5 +1,6 @@
 # std
 import logging
+from sys import exc_info
 from inspect import stack
 # interno
 from src.util import *
@@ -25,7 +26,7 @@ class Logger:
     @staticmethod
     def erro(mensagem: str) -> None:
         """Log nível 'ERROR'"""
-        logging.error(f"arquivo({ informacoes_filename(2)[1] }) | função({ stack()[1].function }) | { mensagem }")
+        logging.error(f"arquivo({ informacoes_filename(2)[1] }) | função({ stack()[1].function }) | { mensagem }", exc_info=exc_info())
 
 __all__ = [
     "Logger"
