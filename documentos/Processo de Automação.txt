@@ -1,0 +1,83 @@
+-----------------------------------
+| Processo realizado na automação |
+-----------------------------------
+
+Abrir o Edge
+
+Pesquisar o site "https://o2qa.odebrecht.com"
+    aguardar tela de login
+    digitar o nome do usuário                       selector = input#usernameField
+    digitar a senha                                 selector = input#passwordField
+    clicar em "efetuar login" ou apertar "Enter"    selector = button#SubmitButton
+    aguardar o texto "Home Page"
+
+Clicar em "AUTOMACAO DCLICK" 
+    selector = a#AppsNavLink
+    aguardar o refresh
+
+Clicar em "Recurso"
+    selector = a#N55
+    quando aparecer o erro "./screenshots/erro_java_tm_blocked.png", clicar em "Run this time"
+        apertar "Tab" 3 vezes e apertar "Enter"
+        ou utilizar o PyAutoGui
+    clicar novamente em "Recursos"
+    aguardar abrir uma nova aba
+    quando aparecer novamente o erro "./screenshots/erro_java_tm_blocked.png", clicar em "Run this time"
+        apertar "Tab" 3 vezes e apertar "Enter"
+        ou utilizar o PyAutoGui
+
+Aplicativo Oracle irá abrir
+    se aparecer a imagem "./screenshots/erro_organizacoes_definidas.png", erro fatal
+
+A janela de organizações irá aparecer "./screenshots/aba_organizacoes.png"
+    o default observado selecionado é a organização de código "ACI"
+
+Clicar na organização de código "ACN"
+    apertar a "SetaBaixo" e "Enter"
+    ou utilizar o PyAutoGui
+    ou clicar no input de "Localizar", que já possui o caracter "%", digitar "ACN" e apertar "Enter"
+
+Irá abrir a janela de "Recursos (ACN)"
+
+Inserir os dados na janela "Recursos (ACN)"
+Dados lidos do excel e mapeados na classe python "Recursos" "../src/planilhas"
+    Alguns campos ficam inacessíveis dependendo do tipo de recurso 
+    um mapeamento geral implicaria em erro caso um tipo tenha de dar "Tab" a mais que o outro para chegar em um local
+
+Para cada item na lista
+    item.Geral.recurso -> janela.Recurso                                            - INPUT
+    apertar 2x "Tab"
+    
+    item.Geral.descricao -> janela.Descrição                                        - INPUT
+    apertar "Tab"
+    
+    item.Geral.tipo -> janela.Tipo                                                  - SELETOR
+        o padrão é "Pessoa"
+        apertar "SetaCima" se for "Diversos"
+        apertar 2x "SetaCima" se for "Máquina"
+        apertar 3x "SetaCima" se for "Moeda"
+        apertar 4x "SetaCima" se for "Quantia"
+    apertar "Tab"
+    
+    item.Geral.udm -> janela.UDM                                                    - INPUT
+    apertar "Tab"
+
+    item.Geral.tipoEncargo -> janela.Tipo de Encargo                                - SELETOR
+        o padrão é "Movimentação de WIP"
+        apertar "SetaCima" se for "Movimentação de OC"
+        apertar 2x "SetaCima" se for "Recebimento da OC"
+        apertar 3x "SetaCima" se for "Manual"
+    apertar 3x "Tab"
+
+    item.ProcessamentoExterno.ProcessamentoExterno -> janela.Processamento Exte...  - CHECKBOX
+        o padrão "marcado" para janela.Tipo de Encargo
+            "Recebimento da OC"
+            ou "Movimentação de OC"
+        apertar "Espaço" para a marcar o CHECKBOX caso seja outro valor diferente do padrão
+    apertar "Tab"
+
+    item.ProcessamentoExterno.item -> janela.Processamento Exte...item              - INPUT
+        o CHECKBOX da janela.Processamento Exte... deve estar marcada caso esse campo seja preenchido
+    apertar 2x "Tab"
+    
+    item.Faturamento
