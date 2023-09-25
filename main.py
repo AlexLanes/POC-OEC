@@ -16,14 +16,13 @@ SENHA = "senha123"
 
 @unique
 class Localizadores(Enum):
-    url_login = "^.*/OA_HTML/RF.jsp.*$"
-    usuario = "css=input#usernameField"
-    senha = "css=input#passwordField"
-    efetuar_login = "css=button#SubmitButton"
+    usuario = "input#usernameField"
+    senha = "input#passwordField"
+    efetuar_login = "button#SubmitButton"
     texto_home = "Home Page"
-    navegacao_dclick = "css=a#AppsNavLink"
-    navegacao_dclick_table = "css=table.x9t"
-    recurso = 'css=a#N55'
+    navegacao_dclick = "a#AppsNavLink"
+    navegacao_dclick_table = "table.x9t"
+    recurso = "a#N55"
 
 @unique
 class Imagens(Enum):
@@ -70,13 +69,29 @@ def abrir_organizacao_acn():
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_ok.value) )
 
 def efetuar_login(navegador: Navegador):
-    """Efeutar o login no `SITE_EBS`"""
+    """Efetuar o login no `SITE_EBS`"""
+    Logger.informar("Efetuando o login")
     navegador.pesquisar(SITE_EBS)
     navegador.aguardar(lambda: "login" in navegador.driver.title.lower())
+    # usuario
+    elemento = navegador.encontrar("css selector", Localizadores.usuario.value)
+    assert elemento != None, "Campo do usuario não encontrado"
+    elemento.send_keys(USUARIO)
+    # senha
+    elemento = navegador.encontrar("css selector", Localizadores.senha.value)
+    assert elemento != None, "Campo de senha não encontrado"
+    elemento.send_keys(SENHA)
+    # efetuar login
+    elemento = navegador.encontrar("css selector", Localizadores.efetuar_login.value)
+    assert elemento != None, "Botão para efeutar login não encontrado"
+    elemento.click()
+    # aguardar a pagina 'Home' carregar
+    navegador.aguardar(lambda: "home page" in navegador.driver.title.lower())
+    Logger.informar("Login efetuado e Home Page carregada")
 
 def main(navegador: Navegador, recursos: list[Recurso], departamentos: list[Departamento]):
     """Fluxo principal"""
-    efetuar_login(navegador)
+    # efetuar_login(navegador)
     # abrir_organizacao_acn()
     # preencher_recurso(recursos[11])
     
@@ -84,7 +99,7 @@ if __name__ == "__main__":
     Logger.informar("Executando")
     recursos = parse_recursos(CAMINHO_EXCEL)
     departamentos = parse_departamentos(CAMINHO_EXCEL)
-
+    
     try:
         with Navegador() as navegador:
             main(navegador, recursos, departamentos)

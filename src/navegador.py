@@ -1,4 +1,5 @@
 # std
+from time import sleep
 from typing import Literal, overload, Callable
 # interno
 from src.util import *
@@ -25,15 +26,10 @@ class Navegador:
         self.TIMEOUT = 30
     
     def __enter__(self):
-        self.driver = Ie(self.options, Service())  
+        self.driver = Ie(self.options, Service())
+        sleep(5)
         self.driver.maximize_window()
         self.driver.implicitly_wait(self.TIMEOUT)
-        # fechar a pagina aberta automaticamente e abrir uma nova
-        abaParaFechar = self.abas[0]
-        self.driver.switch_to.new_window("tab")
-        self.driver.switch_to.window(abaParaFechar)
-        self.driver.close()
-        self.driver.switch_to.window(self.abas[0])
         Logger.informar("Navegador iniciado")
         return self
 
