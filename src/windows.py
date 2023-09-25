@@ -1,5 +1,6 @@
 # std
-from datetime import time, sleep
+from time import sleep
+from datetime import time
 from dataclasses import dataclass
 from typing import overload, Literal
 # interno
