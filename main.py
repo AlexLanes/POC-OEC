@@ -72,7 +72,7 @@ def abrir_organizacao_acn():
 def efetuar_login(navegador: Navegador):
     """Efeutar o login no `SITE_EBS`"""
     navegador.pesquisar(SITE_EBS)
-    navegador.aguardar(lambda: "login" in navegador.navegador.title.lower())
+    navegador.aguardar(lambda: "login" in navegador.driver.title.lower())
 
 def main(navegador: Navegador, recursos: list[Recurso], departamentos: list[Departamento]):
     """Fluxo principal"""
