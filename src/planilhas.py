@@ -56,7 +56,15 @@ class Recurso:
         return self.Geral.__dict__ == other.Geral.__dict__\
             and self.ProcessamentoExterno.__dict__ == other.ProcessamentoExterno.__dict__\
             and self.Faturamento.__dict__ == other.Faturamento.__dict__
-
+    
+    def __str__(self) -> str:
+        return {
+            "Geral": self.Geral.__dict__,
+            "ProcessamentoExterno": self.ProcessamentoExterno.__dict__,
+            "Faturamento": self.Faturamento.__dict__,
+            "Taxas": [ taxa.__dict__ for taxa in self.Taxas ]
+        }.__str__()
+    
 class Departamento:
     def __init__(self, d: tuple) -> None:
         """Criar um objeto para armazenar os atributos de um `Departamento`"""
@@ -66,6 +74,12 @@ class Departamento:
     def __eq__(self, other) -> bool:
         """Comparador de `Departamento`"""
         return self.Departamento.__dict__ == other.Departamento.__dict__
+
+    def __str__(self) -> str:
+        return {
+            "Departamento": self.Departamento.__dict__,
+            "Recursos": [ recurso.__dict__ for recurso in self.Recursos ]
+        }.__str__()
     
 def parse_recursos(caminhoAbsolutoExcel: str) -> list[Recurso]:
     """Realiza o parse da planilha recursos do excel, com base no caminho absoluto, para um formato amigável"""
