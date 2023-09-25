@@ -6,7 +6,7 @@ from src.logger import *
 # externo
 from selenium.webdriver.common.by import By
 from selenium.webdriver import Ie, IeOptions
-from selenium.webdriver.common.keys import Keys
+from selenium.common import TimeoutException
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait as Wait
@@ -28,9 +28,10 @@ class Navegador:
         self.driver = Ie(self.options, Service())  
         self.driver.maximize_window()
         self.driver.implicitly_wait(self.TIMEOUT)
-        # fechar a pagina aberta automaticamento e abrir uma nova
+        # fechar a pagina aberta automaticamente e abrir uma nova
+        abaParaFechar = self.abas[0]
         self.driver.switch_to.new_window("tab")
-        self.driver.switch_to.window(self.abas[0])
+        self.driver.switch_to.window(abaParaFechar)
         self.driver.close()
         self.driver.switch_to.window(self.abas[0])
         Logger.informar("Navegador iniciado")
@@ -75,12 +76,13 @@ class Navegador:
         if len(elementos) == 0: return None
         return elementos[0] if primeiro else elementos
         
-    def aguardar(self, condicao: Callable[[], bool], mensagemErro: str = ""):
+    def aguardar(self, condicao: Callable[[], bool], mensagemErro: str = None):
         """Repete a condição até que resulte em `True` ou `TimeoutException` com a `mensagemErro`"""
         Logger.informar(f"Aguardando uma condição")
         Wait(self.driver, self.TIMEOUT).until(lambda _: condicao(), mensagemErro)
         Logger.informar(f"Condição atendida")
 
 __all__ = [
-    "Navegador"
+    "Navegador",
+    "TimeoutException"
 ]

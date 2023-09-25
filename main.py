@@ -90,6 +90,9 @@ if __name__ == "__main__":
             main(navegador, recursos, departamentos)
         Logger.informar("Finalizado execução com sucesso")
 
+    except TimeoutException as erro:
+        Logger.erro(f"Erro de timeout na espera de alguma condição/elemento: { erro }")
+        exit(1)
     except AssertionError as erro:
         Logger.erro(f"Erro de validação pré-execução de algum passo no fluxo: { erro }")
         exit(1)
