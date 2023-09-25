@@ -1,6 +1,7 @@
 # std
 from typing import Literal, overload, Callable
 # interno
+from src.util import *
 from src.logger import *
 # externo
 from selenium.webdriver.common.by import By
