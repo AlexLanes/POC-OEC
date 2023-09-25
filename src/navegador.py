@@ -1,5 +1,5 @@
 # std
-from typing import Literal, overload
+from typing import Literal, overload, Callable
 # interno
 from src.logger import *
 # externo
@@ -8,7 +8,6 @@ from selenium.webdriver import Ie, IeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.remote.webelement import WebElement
-import selenium.webdriver.support.expected_conditions as Expect
 from selenium.webdriver.support.wait import WebDriverWait as Wait
 
 ESTRATEGIAS = Literal["id", "xpath", "link text", "name", "tag name", "class name", "css selector", "partial link text"]
@@ -74,6 +73,12 @@ class Navegador:
         Logger.informar(f"Encontrado { len(elementos) } elemento(s)")
         if len(elementos) == 0: return None
         return elementos[0] if primeiro else elementos
+        
+    def aguardar(self, condicao: Callable[[], bool], mensagemErro: str = ""):
+        """Repete a condição até que resulte em `True` ou `TimeoutException` com a `mensagemErro`"""
+        Logger.informar(f"Aguardando uma condição")
+        Wait(self.navegador, self.TIMEOUT).until(lambda _: condicao(), mensagemErro)
+        Logger.informar(f"Condição atendida")
 
 __all__ = [
     "Navegador"

@@ -69,8 +69,14 @@ def abrir_organizacao_acn():
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_acn.value) )
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_ok.value) )
 
+def efetuar_login(navegador: Navegador):
+    """Efeutar o login no `SITE_EBS`"""
+    navegador.pesquisar(SITE_EBS)
+    navegador.aguardar(lambda: "login" in navegador.navegador.title.lower())
+
 def main(navegador: Navegador, recursos: list[Recurso], departamentos: list[Departamento]):
     """Fluxo principal"""
+    efetuar_login(navegador)
     # abrir_organizacao_acn()
     # preencher_recurso(recursos[11])
     
@@ -88,7 +94,7 @@ if __name__ == "__main__":
         Logger.erro(f"Erro de validação pré-execução de algum passo no fluxo: { erro }")
         exit(1)
     except Exception as erro:
-        Logger.erro(f"Erro inesperado no fluxo: {erro}")
+        Logger.erro(f"Erro inesperado no fluxo: { erro }")
         exit(1)
 
 """
