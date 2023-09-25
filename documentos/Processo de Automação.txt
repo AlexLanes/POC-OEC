@@ -1,3 +1,7 @@
+Adicionar o site "https://o2qa.odebrecht.com" nos sites confiáveis em Internet Options -> Security -> Trusted Sites -> Sites
+Adicionar o site "https://o2qa.odebrecht.com" nos pop-ups confiáveis em Internet Options -> Privacy -> Pop-up Blocker -> Settings
+Adicionar o driver "../drivers/IEDriverServer.exe" no PATH das variáveis de ambiente
+
 -----------------------------------
 | Processo realizado na automação |
 -----------------------------------
