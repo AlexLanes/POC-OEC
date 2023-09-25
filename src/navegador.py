@@ -4,27 +4,27 @@ from typing import Literal, overload
 from src.logger import *
 # externo
 from selenium.webdriver.common.by import By
-from selenium.webdriver import Edge, IeOptions
+from selenium.webdriver import Ie, IeOptions
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.edge.service import Service
-from webdriver_manager.microsoft import IEDriverManager
 from selenium.webdriver.remote.webelement import WebElement
 import selenium.webdriver.support.expected_conditions as Expect
 from selenium.webdriver.support.wait import WebDriverWait as Wait
 
-OPTIONS = IeOptions()
-OPTIONS.add_argument("--ignore-certificate-errors")
 ESTRATEGIAS = Literal["id", "xpath", "link text", "name", "tag name", "class name", "css selector", "partial link text"]
 
 class Navegador:
-    navegador: Edge
+    navegador: Ie
     def __init__(self):
         """Iniciar o driver do Edge. Usar com o `with`"""
+        self.options = IeOptions()
+        self.options.attach_to_edge_chrome = True
+        self.options.add_argument("--ignore-certificate-errors")
+        self.options.edge_executable_path = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
         self.TIMEOUT = 30
-        self.__driver = IEDriverManager(path=r"C:\Apps\POC OEC\drivers").install()
     
     def __enter__(self):
-        self.navegador = Edge(OPTIONS, Service(self.__driver))  
+        self.navegador = Ie(self.options, Service())  
         self.navegador.maximize_window()
         self.navegador.implicitly_wait(self.TIMEOUT)
         # fechar a pagina aberta automaticamento e abrir uma nova
