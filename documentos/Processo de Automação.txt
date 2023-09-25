@@ -50,38 +50,27 @@ Dados lidos do excel e mapeados na classe python "Recursos" "../src/planilhas"
 
 Para cada item na lista
     item.Geral.recurso -> janela.Recurso                                            - INPUT
-    apertar 2x "Tab"
     
     item.Geral.descricao -> janela.Descrição                                        - INPUT
-    apertar "Tab"
     
     item.Geral.tipo -> janela.Tipo                                                  - SELETOR
         o padrão é "Pessoa"
-        apertar "SetaCima" se for "Diversos"
-        apertar 2x "SetaCima" se for "Máquina"
-        apertar 3x "SetaCima" se for "Moeda"
-        apertar 4x "SetaCima" se for "Quantia"
-    apertar "Tab"
+        apertar "SetaCima" e "Enter" se for "Diversos"
+        apertar 2x "SetaCima" e "Enter" se for "Máquina"
+        apertar 3x "SetaCima" e "Enter" se for "Moeda"                              "NÃO CONFIAR - Automaticamente ativa o CHECKBOX do Custeado"
+        apertar 4x "SetaCima" e "Enter" se for "Quantia"
     
     item.Geral.udm -> janela.UDM                                                    - INPUT
-    apertar "Tab"
 
     item.Geral.tipoEncargo -> janela.Tipo de Encargo                                - SELETOR
         o padrão é "Movimentação de WIP"
-        apertar "SetaCima" se for "Movimentação de OC"
+        apertar "SetaCima" se for "Movimentação de OC"                              "NÃO CONFIAR - Automaticamente ativa os CHECKBOXs Processamento Externo e Custeado"
         apertar 2x "SetaCima" se for "Recebimento da OC"
         apertar 3x "SetaCima" se for "Manual"
-    apertar 3x "Tab"
 
     item.ProcessamentoExterno.ProcessamentoExterno -> janela.Processamento Exte...  - CHECKBOX
-        o padrão "marcado" para janela.Tipo de Encargo
-            "Recebimento da OC"
-            ou "Movimentação de OC"
-        apertar "Espaço" para a marcar o CHECKBOX caso seja outro valor diferente do padrão
-    apertar "Tab"
 
     item.ProcessamentoExterno.item -> janela.Processamento Exte...item              - INPUT
         o CHECKBOX da janela.Processamento Exte... deve estar marcada caso esse campo seja preenchido
-    apertar 2x "Tab"
     
-    item.Faturamento
+    item.Faturamento.Custeado -> janela.Custeado                                    - CHECKBOX

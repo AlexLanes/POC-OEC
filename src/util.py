@@ -1,5 +1,6 @@
 # std
 import re
+from json import dumps
 from inspect import stack
 from unicodedata import normalize
 # externo
@@ -31,9 +32,14 @@ def informacoes_filename(index = 1) -> tuple[str, str]:
     caminho = filename[0 : filename.rfind("\\")]
     return (caminho, nome)
 
+def to_json(item) -> str:
+    """Retorna o `item` na forma de JSON"""
+    return dumps(item, ensure_ascii=False, indent=4)
+
 __all__ = [
     "remover_acentuacao",
     "normalizar",
     "mapear_dtypes",
-    "informacoes_filename"
+    "informacoes_filename",
+    "to_json"
 ]
