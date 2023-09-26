@@ -74,3 +74,18 @@ Para cada item na lista
         o CHECKBOX da janela.Processamento Exte... deve estar marcada caso esse campo seja preenchido
     
     item.Faturamento.Custeado -> janela.Custeado                                    - CHECKBOX
+        o CHECKBOX da janela.Custeado deve estar marcada caso esse campo seja preenchido
+    
+    item.Faturamento.contaAbsorcao -> janela.Conta de Absorção                      - INPUT
+        o CHECKBOX da janela.Custeado deve estar marcada caso esse campo seja preenchido
+
+    item.Faturamento.contaVariacao -> janela.Conta de Variação                      - INPUT
+        o CHECKBOX da janela.Custeado deve estar marcada caso esse campo seja preenchido
+    
+    item.Taxas -> janela.Taxa Padrão                                                - CHECKBOX
+        se houver 1 ou mais taxas, o CHECKBOX deve ser marcado
+        o CHECKBOX da janela.Custeado deve estar marcada caso esse campo seja preenchido
+    
+    item.Taxas -> janela.Taxas                                                      - INPUTS
+        o CHECKBOX da janela.Custeado deve estar marcada caso esses campos sejam preenchidos
+        o CHECKBOX da janela.Taxa Padrão deve estar marcada caso esses campos sejam preenchidos

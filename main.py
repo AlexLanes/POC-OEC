@@ -29,6 +29,7 @@ class Imagens(Enum):
     organizacoes = "./screenshots/aba_organizacoes.png"
     recursos = "./screenshots/aba_recursos.png"
     recursos_processamento_desmarcado = "./screenshots/aba_recursos_processamento_externo.png"
+    recursos_custeado_desmarcado = "./screenshots/aba_recursos_custeado.png"
     erro_localizar = "./screenshots/erro_localizar.png"
 
 @unique
@@ -104,7 +105,12 @@ def preencher_recurso(recurso: Recurso):
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'ProcessamentoExterno.item'. Recurso: { to_json(recurso.__dict__()) }")
             return
     else:
-        pass
+        # desativar
+        processamentoDescarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
+        if not processamentoDescarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
+    # custeado
+    # necessário ativar para preencher
+    # necessário desativar caso estiver ativo e não for custeado
     
 def abrir_organizacao_acn():
     """Clicar na organização Código 'ACN' e depois em 'OK'"""
@@ -168,7 +174,7 @@ if __name__ == "__main__":
     departamentos = parse_departamentos(CAMINHO_EXCEL)
     
     try:
-        preencher_recurso(recursos[-1])
+        preencher_recurso(recursos[0])
 
 
 
