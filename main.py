@@ -28,6 +28,8 @@ class Localizadores(Enum):
 class Imagens(Enum):
     organizacoes = "./screenshots/aba_organizacoes.png"
     recursos = "./screenshots/aba_recursos.png"
+    recursos_processamento_desmarcado = "./screenshots/aba_recursos_processamento_externo.png"
+    erro_localizar = "./screenshots/erro_localizar.png"
 
 @unique
 class Offsets(Enum):
@@ -41,6 +43,7 @@ class Offsets(Enum):
 
 def preencher_recurso(recurso: Recurso):
     """Preencher a aba Recursos com os dados do `Recurso`"""
+    Logger.informar("Iniciado o preenchimento de um Recurso")
     coordenadas = Windows.procurar_imagem(Imagens.recursos.value, segundosProcura=10)
     assert coordenadas != None, "Aba dos Recursos não encontrada"
     # recurso
@@ -51,19 +54,36 @@ def preencher_recurso(recurso: Recurso):
     Windows.digitar(recurso.Geral.descricao)
     # tipo
     # tipo de encargo
-    # udm
+    # udm 
+    # necessita validação se o campo foi aceito
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_udm.value) )
-    Windows.digitar(recurso.Geral.descricao)
+    Windows.digitar(recurso.Geral.udm)
+    Windows.atalho(["enter"])
+    if Windows.rgb_mouse()[2] == 255:
+        Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.udm'. Recurso: { to_json(recurso.__dict__()) }")
+        return
     # processamento externo
+    # necessário ativar para preencher
+    # necessário desativar caso estiver ativo e não houver processamento externo
     if recurso.ProcessamentoExterno.processamentoExterno:
-        Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
+        # ativar
+        processamentoDescarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
+        if processamentoDescarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
         # item
+        # necessita validação se o campo foi aceito
         Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo_item.value) )
         Windows.digitar(recurso.ProcessamentoExterno.item)
+        Windows.atalho(["enter"])
+        campoNaoAceito = Windows.procurar_imagem(Imagens.erro_localizar.value, segundosProcura=3)
+        if campoNaoAceito:
+            Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'ProcessamentoExterno.item'. Recurso: { to_json(recurso.__dict__()) }")
+            return
+    else:
+        pass
     
 def abrir_organizacao_acn():
     """Clicar na organização Código 'ACN' e depois em 'OK'"""
-    coordenadas = Windows.procurar_imagem(Imagens.organizacoes.value, segundosProcura=10)
+    coordenadas = Windows.procurar_imagem(Imagens.organizacoes.value, segundosProcura=30)
     assert coordenadas != None, "Aba das organizações não encontrada"
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_acn.value) )
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_ok.value) )
@@ -112,9 +132,9 @@ def efetuar_login(navegador: Navegador):
 
 def main(navegador: Navegador, recursos: list[Recurso], departamentos: list[Departamento]):
     """Fluxo principal"""
-    # efetuar_login(navegador)
-    # abrir_aplicativo_oracle(navegador)
-    # abrir_organizacao_acn()
+    efetuar_login(navegador)
+    abrir_aplicativo_oracle(navegador)
+    abrir_organizacao_acn()
     # preencher_recurso(recursos[11])
     
 if __name__ == "__main__":
@@ -123,9 +143,15 @@ if __name__ == "__main__":
     departamentos = parse_departamentos(CAMINHO_EXCEL)
     
     try:
-        with Navegador() as navegador:
-            main(navegador, recursos, departamentos)
-        Logger.informar("Finalizado execução com sucesso")
+        preencher_recurso(recursos[-1])
+
+
+
+
+
+        # with Navegador() as navegador:
+        #     main(navegador, recursos, departamentos)
+        # Logger.informar("Finalizado execução com sucesso")
 
     except (TimeoutException, TimeoutError) as erro:
         Logger.erro(f"Erro de timeout na espera de alguma condição/elemento/janela: { erro }")
