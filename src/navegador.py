@@ -27,7 +27,7 @@ class Navegador:
     
     def __enter__(self):
         self.driver = Ie(self.options, Service())
-        # self.driver.maximize_window()
+        # self.driver.maximize_window() # BUG Travando o navegador 
         self.driver.implicitly_wait(self.TIMEOUT)
         Logger.informar("Navegador iniciado")
         return self
