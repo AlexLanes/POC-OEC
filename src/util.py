@@ -1,8 +1,10 @@
 # std
 import re
 from json import dumps
+from typing import Any
 from inspect import stack
 from unicodedata import normalize
+from dataclasses import dataclass
 # externo
 from pandas import DataFrame
 
@@ -23,14 +25,21 @@ def mapear_dtypes(df: DataFrame) -> dict:
         coluna, tipo, *_ = re.split(r"\s+", colunaTipo)
         mapa[coluna] = tipo
     return mapa
-
-def informacoes_filename(index = 1) -> tuple[str, str]:
-    """Obter o caminho absoluto e o nome do arquivo presente no stack dos callers.\n
-    Padrão = Arquivo que chamou o informacoes_filename()"""
+@dataclass
+class Arquivo:
+    nome: str
+    caminho: str
+    funcao: str
+    linha: int
+def info_stack(index = 1) -> Arquivo:
+    """Obter informações presente no stack dos callers.\n
+    Padrão = Arquivo que chamou o info_stack()"""
+    linha = stack()[index].lineno
+    funcao = stack()[index].function
     filename = stack()[index].filename
-    nome = filename[filename.rfind("\\") + 1:]
+    nome = filename[filename.rfind("\\") + 1 : ]
     caminho = filename[0 : filename.rfind("\\")]
-    return (caminho, nome)
+    return Arquivo(nome, caminho, funcao, linha)
 
 def to_json(item) -> str:
     """Retorna o `item` na forma de JSON"""
@@ -40,6 +49,6 @@ __all__ = [
     "remover_acentuacao",
     "normalizar",
     "mapear_dtypes",
-    "informacoes_filename",
+    "info_stack",
     "to_json"
 ]

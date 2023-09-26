@@ -8,7 +8,7 @@ from src.windows import *
 from src.navegador import *
 from src.planilhas import *
 
-CAMINHO_EXCEL = rf"{ informacoes_filename()[0] }\documentos\RECURSOS_DEPARTAMENTOS.xlsx"
+CAMINHO_EXCEL = rf"{ info_stack().caminho }\documentos\RECURSOS_DEPARTAMENTOS.xlsx"
 SITE_EBS = "https://o2qa.odebrecht.com"
 USUARIO = "dclick"
 SENHA = "senha123"
@@ -112,8 +112,8 @@ def efetuar_login(navegador: Navegador):
 
 def main(navegador: Navegador, recursos: list[Recurso], departamentos: list[Departamento]):
     """Fluxo principal"""
-    efetuar_login(navegador)
-    abrir_aplicativo_oracle(navegador)
+    # efetuar_login(navegador)
+    # abrir_aplicativo_oracle(navegador)
     # abrir_organizacao_acn()
     # preencher_recurso(recursos[11])
     

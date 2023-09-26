@@ -1,32 +1,33 @@
 # std
 import logging
 from sys import exc_info
-from inspect import stack
 # interno
 from src.util import *
+
+NOME_ARQUIVO = "execução.log"
 
 class Logger:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s | id(%(process)d) | level(%(levelname)s) | %(message)s",
         datefmt="%Y-%m-%dT%H:%M:%S",
-        filename="execução.log",
+        filename=NOME_ARQUIVO,
         encoding="utf-8",
-        filemode="w"
+        filemode="a"
     )
     
     @staticmethod
     def informar(mensagem: str) -> None:
         """Log nível 'INFO'"""
-        logging.info(f"arquivo({ informacoes_filename(2)[1] }) | função({ stack()[1].function }) | { mensagem }")
+        logging.info(f"arquivo({ info_stack(2).nome }) | função({ info_stack(2).funcao }) | linha({ info_stack(2).linha }) | { mensagem }")
     @staticmethod
     def avisar(mensagem: str) -> None:
         """Log nível 'WARNING'"""
-        logging.warning(f"arquivo({ informacoes_filename(2)[1] }) | função({ stack()[1].function }) | { mensagem }")
+        logging.warning(f"arquivo({ info_stack(2).nome }) | função({ info_stack(2).funcao }) | linha({ info_stack(2).linha }) | { mensagem }")
     @staticmethod
     def erro(mensagem: str) -> None:
         """Log nível 'ERROR'"""
-        logging.error(f"arquivo({ informacoes_filename(2)[1] }) | função({ stack()[1].function }) | { mensagem }", exc_info=exc_info())
+        logging.error(f"arquivo({ info_stack(2).nome }) | função({ info_stack(2).funcao }) | linha({ info_stack(2).linha }) | { mensagem }", exc_info=exc_info())
 
 __all__ = [
     "Logger"
