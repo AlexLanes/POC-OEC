@@ -158,7 +158,7 @@ class Windows:
     @staticmethod
     def atalho(teclas: list[TECLADO]) -> None:
         """Apertar as teclas sequencialmente e depois soltá-las em ordem reversa"""
-        AutoGui.hotkey(teclas)
+        AutoGui.hotkey(teclas, interval=0.25)
     
     @staticmethod
     def digitar(texto: str, delay = 0.01) -> None:
