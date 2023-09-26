@@ -15,33 +15,34 @@ SENHA = "senha123"
 
 @unique
 class Localizadores(Enum):
-    texto_login = "Login"
-    usuario = "input#usernameField"
-    senha = "input#passwordField"
-    efetuar_login = "button#SubmitButton"
-    texto_home = "Home Page"
-    navegacao_dclick = "a#AppsNavLink"
     recurso = "a#N55"
+    texto_login = "Login"
+    texto_home = "Home Page"
+    senha = "input#passwordField"
+    usuario = "input#usernameField"
+    navegacao_dclick = "a#AppsNavLink"
+    efetuar_login = "button#SubmitButton"
     texto_aplicativo_oracle = "Aplicativos Oracle"
 
 @unique
 class Imagens(Enum):
-    organizacoes = "./screenshots/aba_organizacoes.png"
     recursos = "./screenshots/aba_recursos.png"
-    recursos_processamento_desmarcado = "./screenshots/aba_recursos_processamento_externo.png"
-    recursos_custeado_desmarcado = "./screenshots/aba_recursos_custeado.png"
+    organizacoes = "./screenshots/aba_organizacoes.png"
     erro_localizar = "./screenshots/erro_localizar.png"
+    recursos_custeado_desmarcado = "./screenshots/aba_recursos_custeado.png"
+    recursos_processamento_desmarcado = "./screenshots/aba_recursos_processamento_externo.png"
 
 @unique
 class Offsets(Enum):
-    organizacoes_acn = (0.06, 0.56)
+    recursos_udm = (0.9, 0.16)
+    recursos_tipo = (0.3, 0.16)
     organizacoes_ok = (0.58, 0.9)
     recursos_recurso = (0.3, 0.07)
+    organizacoes_acn = (0.06, 0.56)
     recursos_descricao = (0.3, 0.115)
-    recursos_tipo = (0.3, 0.16)
+    recursos_custeado = (0.037, 0.495)
     recursos_tipo_encargo = (0.3, 0.205)
-    recursos_udm = (0.9, 0.16)
-    recursos_processamento_externo = (0.04, 0.34)
+    recursos_processamento_externo = (0.037, 0.34)
     recursos_processamento_externo_item = (0.15, 0.40)
 
 def preencher_recurso(recurso: Recurso):
@@ -93,8 +94,8 @@ def preencher_recurso(recurso: Recurso):
     # necessário desativar caso estiver ativo e não houver processamento externo
     if recurso.ProcessamentoExterno.processamentoExterno:
         # ativar
-        processamentoDescarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
-        if processamentoDescarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
+        processamentoDesmarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
+        if processamentoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
         # item
         # necessita validação se o campo foi aceito
         Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo_item.value) )
@@ -106,11 +107,18 @@ def preencher_recurso(recurso: Recurso):
             return
     else:
         # desativar
-        processamentoDescarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
-        if not processamentoDescarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
+        processamentoDesmarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
+        if not processamentoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
     # custeado
     # necessário ativar para preencher
     # necessário desativar caso estiver ativo e não for custeado
+    if recurso.Faturamento.custeado:
+        # ativar
+        custeadoDesmarcado = Windows.procurar_imagem(Imagens.recursos_custeado_desmarcado.value, "0.95")
+        if custeadoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_custeado.value) )
+        # TODO
+    else:
+        pass
     
 def abrir_organizacao_acn():
     """Clicar na organização Código 'ACN' e depois em 'OK'"""
@@ -174,7 +182,7 @@ if __name__ == "__main__":
     departamentos = parse_departamentos(CAMINHO_EXCEL)
     
     try:
-        preencher_recurso(recursos[0])
+        preencher_recurso(recursos[-1])
 
 
 
