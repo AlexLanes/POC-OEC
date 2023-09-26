@@ -38,6 +38,7 @@ class Offsets(Enum):
     recursos_recurso = (0.3, 0.07)
     recursos_descricao = (0.3, 0.115)
     recursos_tipo = (0.3, 0.16)
+    recursos_tipo_encargo = (0.3, 0.205)
     recursos_udm = (0.9, 0.16)
     recursos_processamento_externo = (0.04, 0.34)
     recursos_processamento_externo_item = (0.15, 0.40)
@@ -67,6 +68,17 @@ def preencher_recurso(recurso: Recurso):
             return
     Windows.atalho(["enter"])
     # tipo de encargo
+    # necessita validação se o tipo de encargo do recurso existe
+    Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_tipo_encargo.value) )
+    match normalizar(recurso.Geral.tipoEncargo):
+        case "movimentacao_de_wip": pass
+        case "movimentacao_de_oc": Windows.atalho(["up"])
+        case "recebimento_da_oc": Windows.atalho(["up", "up"])
+        case "manual": Windows.atalho(["up", "up", "up"])
+        case _:
+            Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.tipoEncargo'. Recurso: { to_json(recurso.__dict__()) }")
+            return
+    Windows.atalho(["enter"])
     # udm 
     # necessita validação se o campo foi aceito
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_udm.value) )
@@ -156,7 +168,6 @@ if __name__ == "__main__":
     departamentos = parse_departamentos(CAMINHO_EXCEL)
     
     try:
-        recursos[-1].Geral.tipo = "errado"
         preencher_recurso(recursos[-1])
 
 
