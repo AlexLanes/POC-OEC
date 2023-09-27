@@ -209,7 +209,10 @@ def abrir_aplicativo_oracle(navegador: Navegador):
     assert elemento != None, "Elemento 'Recurso' não encontrado"
     elemento.click()
     # aguardar o aplicativo oracle
-    Windows.aguardar_janela(Localizadores.texto_aplicativo_oracle.value, 30)
+    Windows.aguardar(
+        lambda: Localizadores.texto_aplicativo_oracle.value.lower() in Windows.titulo_janela_focada(),
+        f"O texto '{ Localizadores.texto_aplicativo_oracle.value }' não foi encontrado no titulo da janela focada"
+    )
     Logger.informar("Aplicativo Oracle aberto")
 
 def efetuar_login(navegador: Navegador):

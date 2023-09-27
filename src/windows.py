@@ -1,9 +1,10 @@
 # std
 from time import sleep, time
 from dataclasses import dataclass
-from typing import overload, Literal
+from typing import overload, Literal, Callable
 # interno
 from src.util import *
+from src.logger import *
 # externo
 import pyautogui as AutoGui
 from pygetwindow import Win32Window
@@ -118,14 +119,16 @@ class Windows:
             if titulo.lower() in janela.title.lower(): return Janela(janela)
 
     @staticmethod
-    def aguardar_janela(titulo: str, timeout=10) -> Janela | TimeoutError:
-        """Aguardar até que uma janela de título `titulo` esteja aberta ou `TimeoutError` após `timeout` segundos"""
+    def aguardar(condicao: Callable[[], bool], mensagemErro: str, timeout=30) -> None | TimeoutError:
+        """Repetir a função `condicao` até que retorne `True` ou `TimeoutError` após `timeout` segundos informando a `mensagemErro`"""
         inicio = time()
+        Logger.informar(f"Aguardando uma condição")
         while True:
             if time() - inicio >= timeout: 
-                raise TimeoutError(f"Janela de título '{ titulo }' não foi encontrada depois de { timeout } segundos")
-            janela = Windows.buscar_janela(titulo)
-            if janela: return janela
+                raise TimeoutError(mensagemErro)
+            elif condicao(): 
+                Logger.informar(f"Condição atendida")
+                return
             else: sleep(0.25)
     
     @staticmethod
