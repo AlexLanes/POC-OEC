@@ -28,7 +28,7 @@ class Tipos:
     class Taxa:
         tipoCusto: str
         descricao3: str
-        custoUsuarioRecurso: str
+        custoUnitarioRecurso: str
     @dataclass
     class Departamento:
         departamento: str
@@ -126,7 +126,7 @@ def parse_recursos(caminhoAbsolutoExcel: str) -> list[Recurso]:
         
         # conversão para str dos campos possivelmente numéricos
         df["item"] = df["item"].astype(str)
-        df["custo_unitario_do_recurso"] = df["custo_unitario_do_recurso"].astype(str)
+        df["custo_unitario_do_recurso"] = df["custo_unitario_do_recurso"].astype(str).replace(r"\.", ",", regex=True)
         
         # validação dos tipos do dataframe
         tiposDf = list( mapear_dtypes(df).values() )
