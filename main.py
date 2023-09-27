@@ -28,7 +28,7 @@ class Localizadores(Enum):
 class Imagens(Enum):
     recursos = "./screenshots/aba_recursos.png"
     organizacoes = "./screenshots/aba_organizacoes.png"
-    erro_localizar = "./screenshots/erro_localizar.png"
+    erro_para_fechar = "./screenshots/erro_para_fechar.png"
     recursos_custeado_desmarcado = "./screenshots/aba_recursos_custeado.png"
     recursos_processamento_desmarcado = "./screenshots/aba_recursos_processamento_externo.png"
 
@@ -37,13 +37,26 @@ class Offsets(Enum):
     recursos_udm = (0.9, 0.16)
     recursos_tipo = (0.3, 0.16)
     organizacoes_ok = (0.58, 0.9)
+    erro_para_fechar = (0.8, 0.2)
     recursos_recurso = (0.3, 0.07)
     organizacoes_acn = (0.06, 0.56)
     recursos_descricao = (0.3, 0.115)
     recursos_custeado = (0.037, 0.495)
     recursos_tipo_encargo = (0.3, 0.205)
+    recursos_conta_absorcao = (0.3, 0.58)
     recursos_processamento_externo = (0.037, 0.34)
     recursos_processamento_externo_item = (0.15, 0.40)
+
+def fechar_possiveis_errors() -> bool:
+    """Fechar possíveis erros na tela retornando um `bool` informando caso algum tenha sido encontrado e fechado"""
+    erroAtual, errosMaximos = 1, 4
+    while erroAtual <= errosMaximos:
+        erro_para_fechar = Windows.procurar_imagem(Imagens.erro_para_fechar.value, "0.8", 2)
+        if erro_para_fechar: 
+            Windows.clicar_mouse( erro_para_fechar.transformar(*Offsets.erro_para_fechar.value) )
+            erroAtual = erroAtual + 1
+        else: break
+    return erroAtual > 1
 
 def preencher_recurso(recurso: Recurso):
     """Preencher a aba Recursos com os dados do `Recurso`"""
@@ -85,7 +98,7 @@ def preencher_recurso(recurso: Recurso):
     # necessita validação se o campo foi aceito
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_udm.value) )
     Windows.digitar(recurso.Geral.udm)
-    Windows.atalho(["enter"])
+    Windows.atalho(["tab"])
     if Windows.rgb_mouse()[2] == 255:
         Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.udm'. Recurso: { to_json(recurso.__dict__()) }")
         return
@@ -100,25 +113,32 @@ def preencher_recurso(recurso: Recurso):
         # necessita validação se o campo foi aceito
         Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo_item.value) )
         Windows.digitar(recurso.ProcessamentoExterno.item)
-        Windows.atalho(["enter"])
-        campoNaoAceito = Windows.procurar_imagem(Imagens.erro_localizar.value, segundosProcura=3)
-        if campoNaoAceito:
+        Windows.atalho(["tab"])
+        if fechar_possiveis_errors():
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'ProcessamentoExterno.item'. Recurso: { to_json(recurso.__dict__()) }")
             return
     else:
         # desativar
         processamentoDesmarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
         if not processamentoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
-    # custeado
+        # custeado
     # necessário ativar para preencher
     # necessário desativar caso estiver ativo e não for custeado
     if recurso.Faturamento.custeado:
         # ativar
         custeadoDesmarcado = Windows.procurar_imagem(Imagens.recursos_custeado_desmarcado.value, "0.95")
         if custeadoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_custeado.value) )
-        # TODO
+        # conta de absorção
+        Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_conta_absorcao.value) )
+        Windows.digitar(recurso.Faturamento.contaAbsorcao)
+        Windows.atalho(["tab"])
+        if fechar_possiveis_errors():
+            Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaAbsorcao'. Recurso: { to_json(recurso.__dict__()) }")
+            return
     else:
-        pass
+        # desativar
+        custeadoDesmarcado = Windows.procurar_imagem(Imagens.recursos_custeado_desmarcado.value, "0.95")
+        if not custeadoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_custeado.value) )
     
 def abrir_organizacao_acn():
     """Clicar na organização Código 'ACN' e depois em 'OK'"""
@@ -182,9 +202,11 @@ if __name__ == "__main__":
     departamentos = parse_departamentos(CAMINHO_EXCEL)
     
     try:
-        preencher_recurso(recursos[-1])
-
-
+        # recursos[-1].ProcessamentoExterno.item = "aasasas"
+        # preencher_recurso(recursos[-1])
+        
+        recursos[0].Faturamento.contaAbsorcao = 'aaaaaaa'
+        preencher_recurso(recursos[0])
 
 
 
