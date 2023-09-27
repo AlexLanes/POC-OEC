@@ -1,0 +1,103 @@
+Adicionar o site "https://o2qa.odebrecht.com" nos sites confiáveis em Internet Options -> Security -> Trusted Sites -> Sites
+Adicionar o site "https://o2qa.odebrecht.com" nos pop-ups confiáveis em Internet Options -> Privacy -> Pop-up Blocker -> Settings
+Adicionar o driver "../drivers/IEDriverServer.exe" no PATH das variáveis de ambiente
+
+----------------------------------------
+| Mapeamentos encontrados na automação |
+----------------------------------------
+
+Abrir o Edge
+
+Pesquisar o site "https://o2qa.odebrecht.com"
+    aguardar tela de login
+    digitar o nome do usuário                       selector = input#usernameField
+    digitar a senha                                 selector = input#passwordField
+    clicar em "efetuar login" ou apertar "Enter"    selector = button#SubmitButton
+    aguardar o texto "Home Page"
+
+Clicar em "AUTOMACAO DCLICK" 
+    selector = a#AppsNavLink
+    aguardar o refresh
+
+Clicar em "Recurso"
+    selector = a#N55
+    quando aparecer o erro "./screenshots/erro_java_tm_blocked.png", clicar em "Run this time"
+        apertar "Tab" 3 vezes e apertar "Enter"
+        ou utilizar o PyAutoGui
+    clicar novamente em "Recursos"
+    aguardar abrir uma nova aba
+    quando aparecer novamente o erro "./screenshots/erro_java_tm_blocked.png", clicar em "Run this time"
+        apertar "Tab" 3 vezes e apertar "Enter"
+        ou utilizar o PyAutoGui
+
+Aplicativo Oracle irá abrir
+    se aparecer a imagem "./screenshots/erro_organizacoes_definidas.png", erro fatal
+
+A janela de organizações irá aparecer "./screenshots/aba_organizacoes.png"
+    o default observado selecionado é a organização de código "ACI"
+
+Clicar na organização de código "ACN"
+    apertar a "SetaBaixo" e "Enter"
+    ou utilizar o PyAutoGui
+    ou clicar no input de "Localizar", que já possui o caracter "%", digitar "ACN" e apertar "Enter"
+
+Irá abrir a janela de "Recursos (ACN)"
+
+Inserir os dados na janela "Recursos (ACN)"
+Dados lidos do excel e mapeados na classe python "Recursos" "../src/planilhas"
+    Alguns campos ficam inacessíveis dependendo do tipo de recurso ou tipo do encargo
+    Alguns CHECKBOXs ativam automaticamente dependendo do tipo de recurso ou tipo do encargo
+
+    Para cada item na lista
+        item.Geral.recurso -> janela.Recurso                                            - INPUT
+        
+        item.Geral.descricao -> janela.Descrição                                        - INPUT
+        
+        item.Geral.tipo -> janela.Tipo                                                  - SELETOR
+            o padrão é "Pessoa"
+            apertar "SetaCima" e "Enter" se for "Diversos"
+            apertar 2x "SetaCima" e "Enter" se for "Máquina"
+            apertar 3x "SetaCima" e "Enter" se for "Moeda"                              "NÃO CONFIAR - Automaticamente ativa o CHECKBOX do Custeado"
+            apertar 4x "SetaCima" e "Enter" se for "Quantia"
+        
+        item.Geral.udm -> janela.UDM                                                    - INPUT
+
+        item.Geral.tipoEncargo -> janela.Tipo de Encargo                                - SELETOR
+            o padrão é "Movimentação de WIP"
+            apertar "SetaCima" se for "Movimentação de OC"                              "NÃO CONFIAR - Automaticamente ativa os CHECKBOXs Processamento Externo e Custeado"
+            apertar 2x "SetaCima" se for "Recebimento da OC"
+            apertar 3x "SetaCima" se for "Manual"
+
+        item.ProcessamentoExterno.ProcessamentoExterno -> janela.Processamento Exte...  - CHECKBOX
+
+        item.ProcessamentoExterno.item -> janela.Processamento Exte...item              - INPUT
+            o CHECKBOX da janela.Processamento Exte... deve estar marcada caso esse campo seja preenchido
+        
+        item.Faturamento.Custeado -> janela.Custeado                                    - CHECKBOX
+            o CHECKBOX da janela.Custeado deve estar marcada caso esse campo seja preenchido
+        
+        item.Faturamento.contaAbsorcao -> janela.Conta de Absorção                      - INPUT
+            o CHECKBOX da janela.Custeado deve estar marcada caso esse campo seja preenchido
+
+        item.Faturamento.contaVariacao -> janela.Conta de Variação                      - INPUT
+            o CHECKBOX da janela.Custeado deve estar marcada caso esse campo seja preenchido
+        
+        item.Taxas -> janela.Taxa Padrão                                                - CHECKBOX
+            se houver 1 ou mais taxas, o CHECKBOX deve ser marcado
+            o CHECKBOX da janela.Custeado deve estar marcada caso esse campo seja preenchido
+        
+        item.Taxas -> janela.Taxas                                                      - INPUTS
+            o CHECKBOX da janela.Custeado deve estar marcada caso esses campos sejam preenchidos
+            o CHECKBOX da janela.Taxa Padrão deve estar marcada caso esses campos sejam preenchidos
+
+            Para cada taxa
+                item.Taxas[].tipoCusto -> janela.Tipo de Custo                          - INPUT
+
+                item.Taxas[].custoUnitarioRecurso -> janela.Custo Unitário do Recurso   - INPUT
+
+            Shift + PgUp para trocar o foco da aba das Taxas para a anterior (Recursos)
+    
+        Ctrl + S para salvar o Recurso preenchido
+        
+        Ctrl + SetaBaixo para abrir um Recurso limpo
+
