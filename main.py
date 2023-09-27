@@ -1,4 +1,5 @@
 # std
+from re import search
 from time import sleep
 from enum import Enum, unique
 # interno
@@ -38,10 +39,12 @@ class Offsets(Enum):
     recursos_tipo = (0.3, 0.16)
     organizacoes_ok = (0.58, 0.9)
     erro_para_fechar = (0.8, 0.2)
+    recursos_taxas = (0.45, 0.69)
     recursos_recurso = (0.3, 0.07)
     organizacoes_acn = (0.06, 0.56)
     recursos_descricao = (0.3, 0.115)
     recursos_custeado = (0.037, 0.495)
+    recursos_taxa_padrao = (0.4, 0.53)
     recursos_tipo_encargo = (0.3, 0.205)
     recursos_conta_absorcao = (0.3, 0.58)
     recursos_conta_variacao = (0.3, 0.629)
@@ -59,8 +62,9 @@ def fechar_possiveis_errors() -> bool:
         else: break
     return erroAtual > 1
 
-def preencher_recurso(recurso: Recurso):
-    """Preencher a aba Recursos com os dados do `Recurso`"""
+def preencher_recurso(recurso: Recurso) -> bool:
+    """Preencher a aba Recursos com os dados do `Recurso`.\n
+    Retornar um `bool` indicando se o recurso foi preenchido corretamente"""
     Logger.informar("Iniciado o preenchimento de um Recurso")
     coordenadas = Windows.procurar_imagem(Imagens.recursos.value, segundosProcura=10)
     assert coordenadas != None, "Aba dos Recursos não encontrada"
@@ -72,7 +76,7 @@ def preencher_recurso(recurso: Recurso):
     Windows.atalho(["tab"])
     if fechar_possiveis_errors():
         Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.recurso'. Recurso: { to_json(recurso.__dict__()) }")
-        return
+        return False
     
     # descricao
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_descricao.value) )
@@ -89,7 +93,7 @@ def preencher_recurso(recurso: Recurso):
         case "quantia": Windows.atalho(["up", "up", "up", "up"])
         case _:
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.tipo'. Recurso: { to_json(recurso.__dict__()) }")
-            return
+            return False
     Windows.atalho(["enter"])
     
     # tipo de encargo
@@ -102,7 +106,7 @@ def preencher_recurso(recurso: Recurso):
         case "manual": Windows.atalho(["up", "up", "up"])
         case _:
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.tipoEncargo'. Recurso: { to_json(recurso.__dict__()) }")
-            return
+            return False
     Windows.atalho(["enter"])
     
     # udm 
@@ -112,7 +116,7 @@ def preencher_recurso(recurso: Recurso):
     Windows.atalho(["tab"])
     if Windows.rgb_mouse()[2] == 255:
         Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.udm'. Recurso: { to_json(recurso.__dict__()) }")
-        return
+        return False
     
     # processamento externo
     # necessário ativar para preencher
@@ -128,7 +132,7 @@ def preencher_recurso(recurso: Recurso):
         Windows.atalho(["tab"])
         if fechar_possiveis_errors():
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'ProcessamentoExterno.item'. Recurso: { to_json(recurso.__dict__()) }")
-            return
+            return False
     else:
         # desativar
         processamentoDesmarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
@@ -147,19 +151,45 @@ def preencher_recurso(recurso: Recurso):
         Windows.atalho(["tab"])
         if fechar_possiveis_errors():
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaAbsorcao'. Recurso: { to_json(recurso.__dict__()) }")
-            return
+            return False
         # conta de variação
         Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_conta_variacao.value) )
         Windows.digitar(recurso.Faturamento.contaVariacao)
         Windows.atalho(["tab"])
         if fechar_possiveis_errors():
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaVariacao'. Recurso: { to_json(recurso.__dict__()) }")
-            return
+            return False
+        # taxas
+        if recurso.Faturamento.taxaPadrao and len(recurso.Taxas) > 0:
+            # ativar e abrir a tela das taxas
+            Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_taxa_padrao.value) )
+            Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_taxas.value) )
+            # necessário preencher as taxas
+            # validações necessárias para os campos que serão preenchidos
+            for taxa in recurso.Taxas: # TODO - Testar Taxas e exceções
+                if taxa.tipoCusto == "" or not search(r"^\d+(,\d+)?$", taxa.custoUnitarioRecurso):
+                    Logger.avisar(f"A taxa no index '{ recurso.Taxas.index(taxa) }' foi ignorada devido a uma falha de validação. Recurso: { to_json(recurso.__dict__()) }")
+                    continue
+                # tipo de custo
+                Windows.digitar(taxa.tipoCusto)
+                Windows.atalho(["tab"])
+                if fechar_possiveis_errors():
+                    Windows.atalho(["ctrl", "up"]) # limpar registro
+                    Logger.avisar(f"Uma taxa foi ignorada devido a falha do campo 'Taxas[{ recurso.Taxas.index(taxa) }].tipoCusto'. Recurso: { to_json(recurso.__dict__()) }")
+                    continue
+                # custo unitário
+                Windows.digitar(taxa.custoUnitarioRecurso)
+                Windows.atalho(["tab"])
+            # retornar o foco para a aba dos recursos
+            Windows.atalho(["shift", "pageup"])
     else:
         # desativar
         custeadoDesmarcado = Windows.procurar_imagem(Imagens.recursos_custeado_desmarcado.value, "0.95")
         if not custeadoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_custeado.value) )
     
+    Logger.informar("Finalizado o preenchido de um Recurso")
+    return True
+
 def abrir_organizacao_acn():
     """Clicar na organização Código 'ACN' e depois em 'OK'"""
     coordenadas = Windows.procurar_imagem(Imagens.organizacoes.value, segundosProcura=30)
@@ -209,23 +239,24 @@ def efetuar_login(navegador: Navegador):
     )
     Logger.informar("Login efetuado e Home Page carregada")
 
-def main(navegador: Navegador, recursos: list[Recurso], departamentos: list[Departamento]):
-    """Fluxo principal"""
-    efetuar_login(navegador)
-    abrir_aplicativo_oracle(navegador)
-    abrir_organizacao_acn()
-    # preencher_recurso(recursos[11])
-    
-if __name__ == "__main__":
-    Logger.informar("Executando")
+def main():
+    """Fluxo principal.\n
+    Mapeamentos passo a passo se encontra no arquivo '../documentos/Mapeamentos de automação.txt'"""
     recursos = parse_recursos(CAMINHO_EXCEL)
     departamentos = parse_departamentos(CAMINHO_EXCEL)
     
     try:
-        # with Navegador() as navegador:
-        #     main(navegador, recursos, departamentos)
-        # Logger.informar("Finalizado execução com sucesso")
-        preencher_recurso(recursos[0])
+        with Navegador() as navegador:
+            efetuar_login(navegador)
+            abrir_aplicativo_oracle(navegador)
+            abrir_organizacao_acn()
+            
+            for recurso in recursos:
+                preenchido = preencher_recurso(recurso)
+                # salvar recurso ou apagar recurso com erro
+                if preenchido: Windows.atalho(["ctrl", "s"])
+                else: Windows.atalho(["f6"])
+                break # TODO
 
     except (TimeoutException, TimeoutError) as erro:
         Logger.erro(f"Erro de timeout na espera de alguma condição/elemento/janela: { erro }")
@@ -236,7 +267,8 @@ if __name__ == "__main__":
     except Exception as erro:
         Logger.erro(f"Erro inesperado no fluxo: { erro }")
         exit(1)
-
-"""
-    Processo passo a passo se encontra no arquivo "../documentos/Processo de automação.txt"
-"""
+    
+if __name__ == "__main__":
+    Logger.informar("--- Iniciado execução do fluxo ---")
+    main()
+    Logger.informar("--- Finalizado execução com sucesso ---")

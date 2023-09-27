@@ -40,7 +40,7 @@ Executar como `python -m src.logger` na pasta raiz"""
 if __name__ == "__main__":
     import re
     from datetime import datetime, timedelta
-    TEMPO_MAXIMO: timedelta = timedelta(hours=11)
+    TEMPO_MAXIMO: timedelta = timedelta(hours=1)
     Logger.informar("Buscando por Logs que estão acima do tempo máximo configurado")
 
     agora = datetime.now()
