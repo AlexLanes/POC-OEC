@@ -44,6 +44,7 @@ class Offsets(Enum):
     recursos_custeado = (0.037, 0.495)
     recursos_tipo_encargo = (0.3, 0.205)
     recursos_conta_absorcao = (0.3, 0.58)
+    recursos_conta_variacao = (0.3, 0.629)
     recursos_processamento_externo = (0.037, 0.34)
     recursos_processamento_externo_item = (0.15, 0.40)
 
@@ -51,7 +52,7 @@ def fechar_possiveis_errors() -> bool:
     """Fechar possíveis erros na tela retornando um `bool` informando caso algum tenha sido encontrado e fechado"""
     erroAtual, errosMaximos = 1, 4
     while erroAtual <= errosMaximos:
-        erro_para_fechar = Windows.procurar_imagem(Imagens.erro_para_fechar.value, "0.8", 2)
+        erro_para_fechar = Windows.procurar_imagem(Imagens.erro_para_fechar.value, "0.7", 2)
         if erro_para_fechar: 
             Windows.clicar_mouse( erro_para_fechar.transformar(*Offsets.erro_para_fechar.value) )
             erroAtual = erroAtual + 1
@@ -63,12 +64,20 @@ def preencher_recurso(recurso: Recurso):
     Logger.informar("Iniciado o preenchimento de um Recurso")
     coordenadas = Windows.procurar_imagem(Imagens.recursos.value, segundosProcura=10)
     assert coordenadas != None, "Aba dos Recursos não encontrada"
+    
     # recurso
+    # necessário validar se o recurso já existe
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_recurso.value) )
     Windows.digitar(recurso.Geral.recurso)
+    Windows.atalho(["tab"])
+    if fechar_possiveis_errors():
+        Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.recurso'. Recurso: { to_json(recurso.__dict__()) }")
+        return
+    
     # descricao
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_descricao.value) )
     Windows.digitar(recurso.Geral.descricao)
+    
     # tipo
     # necessita validação se o tipo do recurso existe
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_tipo.value) )
@@ -82,6 +91,7 @@ def preencher_recurso(recurso: Recurso):
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.tipo'. Recurso: { to_json(recurso.__dict__()) }")
             return
     Windows.atalho(["enter"])
+    
     # tipo de encargo
     # necessita validação se o tipo de encargo do recurso existe
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_tipo_encargo.value) )
@@ -94,6 +104,7 @@ def preencher_recurso(recurso: Recurso):
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.tipoEncargo'. Recurso: { to_json(recurso.__dict__()) }")
             return
     Windows.atalho(["enter"])
+    
     # udm 
     # necessita validação se o campo foi aceito
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_udm.value) )
@@ -102,6 +113,7 @@ def preencher_recurso(recurso: Recurso):
     if Windows.rgb_mouse()[2] == 255:
         Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.udm'. Recurso: { to_json(recurso.__dict__()) }")
         return
+    
     # processamento externo
     # necessário ativar para preencher
     # necessário desativar caso estiver ativo e não houver processamento externo
@@ -121,7 +133,8 @@ def preencher_recurso(recurso: Recurso):
         # desativar
         processamentoDesmarcado = Windows.procurar_imagem(Imagens.recursos_processamento_desmarcado.value, "0.95")
         if not processamentoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo.value) )
-        # custeado
+    
+    # custeado
     # necessário ativar para preencher
     # necessário desativar caso estiver ativo e não for custeado
     if recurso.Faturamento.custeado:
@@ -134,6 +147,13 @@ def preencher_recurso(recurso: Recurso):
         Windows.atalho(["tab"])
         if fechar_possiveis_errors():
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaAbsorcao'. Recurso: { to_json(recurso.__dict__()) }")
+            return
+        # conta de variação
+        Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_conta_variacao.value) )
+        Windows.digitar(recurso.Faturamento.contaVariacao)
+        Windows.atalho(["tab"])
+        if fechar_possiveis_errors():
+            Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaVariacao'. Recurso: { to_json(recurso.__dict__()) }")
             return
     else:
         # desativar
@@ -202,17 +222,10 @@ if __name__ == "__main__":
     departamentos = parse_departamentos(CAMINHO_EXCEL)
     
     try:
-        # recursos[-1].ProcessamentoExterno.item = "aasasas"
-        # preencher_recurso(recursos[-1])
-        
-        recursos[0].Faturamento.contaAbsorcao = 'aaaaaaa'
-        preencher_recurso(recursos[0])
-
-
-
         # with Navegador() as navegador:
         #     main(navegador, recursos, departamentos)
         # Logger.informar("Finalizado execução com sucesso")
+        preencher_recurso(recursos[0])
 
     except (TimeoutException, TimeoutError) as erro:
         Logger.erro(f"Erro de timeout na espera de alguma condição/elemento/janela: { erro }")
