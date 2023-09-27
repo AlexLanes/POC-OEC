@@ -198,7 +198,7 @@ def abrir_organizacao_acn():
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_ok.value) )
 
 def abrir_aplicativo_oracle(navegador: Navegador):
-    """Clicar em `AUTOMACAO DCLICK`, `Recursos` e esperar o aplicativo oracle aparecer na barra de tarefa do windows"""
+    """Clicar em `AUTOMACAO DCLICK`, `Recursos` e esperar o aplicativo oracle ficar focado"""
     Logger.informar("Abrindo o Aplicativo Oracle")
     # aba "AUTOMACAO DCLICK"
     elemento = navegador.encontrar("css selector", Localizadores.navegacao_dclick.value)
@@ -210,7 +210,7 @@ def abrir_aplicativo_oracle(navegador: Navegador):
     elemento.click()
     # aguardar o aplicativo oracle
     Windows.aguardar(
-        lambda: Localizadores.texto_aplicativo_oracle.value.lower() in Windows.titulo_janela_focada(),
+        lambda: Localizadores.texto_aplicativo_oracle.value.lower() in Windows.titulo_janela_focada().lower(),
         f"O texto '{ Localizadores.texto_aplicativo_oracle.value }' não foi encontrado no titulo da janela focada"
     )
     Logger.informar("Aplicativo Oracle aberto")
@@ -250,8 +250,10 @@ def main():
     
     try:
         with Navegador() as navegador:
+            Windows.janela_focada().maximizar()
             efetuar_login(navegador)
             abrir_aplicativo_oracle(navegador)
+            Windows.janela_focada().maximizar()
             abrir_organizacao_acn()
             
             for recurso in recursos:
@@ -259,7 +261,6 @@ def main():
                 # salvar recurso ou apagar recurso com erro
                 if preenchido: Windows.atalho(["ctrl", "s"])
                 else: Windows.atalho(["f6"])
-                break # TODO
 
     except (TimeoutException, TimeoutError) as erro:
         Logger.erro(f"Erro de timeout na espera de alguma condição/elemento/janela: { erro }")
