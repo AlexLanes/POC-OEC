@@ -60,6 +60,9 @@ def obter_x_y(coordenadas: tuple[int, int] | Coordenadas) -> tuple[int|None, int
 @dataclass
 class Janela:
     janela: Win32Window
+    def titulo(self) -> str:
+        """Titulo da janela"""
+        return self.janela.title
     def maximizar(self) -> None:
         """Maximizar janela"""
         self.janela.maximize()
@@ -170,5 +173,6 @@ class Windows:
 
 __all__ = [
     "Windows",
-    "AutoGui"
+    "AutoGui",
+    "Janela"
 ]

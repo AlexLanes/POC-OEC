@@ -30,6 +30,7 @@ class Imagens(Enum):
     recursos = "./screenshots/aba_recursos.png"
     organizacoes = "./screenshots/aba_organizacoes.png"
     erro_para_fechar = "./screenshots/erro_para_fechar.png"
+    botoes_padroes_abas = "./screenshots/botoes_padroes_abas.png"
     recursos_custeado_desmarcado = "./screenshots/aba_recursos_custeado.png"
     recursos_processamento_desmarcado = "./screenshots/aba_recursos_processamento_externo.png"
 
@@ -42,6 +43,7 @@ class Offsets(Enum):
     recursos_taxas = (0.45, 0.69)
     recursos_recurso = (0.3, 0.07)
     organizacoes_acn = (0.06, 0.56)
+    botoes_padroes_abas = (0.8, 0.5)
     recursos_descricao = (0.3, 0.115)
     recursos_custeado = (0.037, 0.495)
     recursos_taxa_padrao = (0.4, 0.53)
@@ -110,11 +112,12 @@ def preencher_recurso(recurso: Recurso) -> bool:
     Windows.atalho(["enter"])
     
     # udm 
-    # necessita validação se o campo foi aceito
+    # necessita validação se o campo foi aceito ou está vazio
+    # TODO - implementar uma checagem de mais pixeis ao redor do mouse na hora de checar pelo azul. O texto inserido dentro pode ficar na frente do azul
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_udm.value) )
     Windows.digitar(recurso.Geral.udm)
     Windows.atalho(["tab"])
-    if Windows.rgb_mouse()[2] == 255:
+    if Windows.rgb_mouse()[2] == 255 or recurso.Geral.udm == "":
         Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.udm'. Recurso: { to_json(recurso.__dict__()) }")
         return False
     
@@ -149,13 +152,14 @@ def preencher_recurso(recurso: Recurso) -> bool:
         Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_conta_absorcao.value) )
         Windows.digitar(recurso.Faturamento.contaAbsorcao)
         Windows.atalho(["tab"])
-        if fechar_possiveis_errors():
+        if fechar_possiveis_errors() or recurso.Faturamento.contaAbsorcao == "":
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaAbsorcao'. Recurso: { to_json(recurso.__dict__()) }")
             return False
         # conta de variação
         Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_conta_variacao.value) )
         Windows.digitar(recurso.Faturamento.contaVariacao)
-        Windows.atalho(["tab"])
+        if recurso.Faturamento.contaVariacao != "": 
+            Windows.atalho(["tab"])
         if fechar_possiveis_errors():
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaVariacao'. Recurso: { to_json(recurso.__dict__()) }")
             return False
@@ -166,7 +170,7 @@ def preencher_recurso(recurso: Recurso) -> bool:
             Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_taxas.value) )
             # necessário preencher as taxas
             # validações necessárias para os campos que serão preenchidos
-            for taxa in recurso.Taxas: # TODO - Testar Taxas e exceções
+            for taxa in recurso.Taxas:
                 if taxa.tipoCusto == "" or not search(r"^\d+(,\d+)?$", taxa.custoUnitarioRecurso):
                     Logger.avisar(f"A taxa no index '{ recurso.Taxas.index(taxa) }' foi ignorada devido a uma falha de validação. Recurso: { to_json(recurso.__dict__()) }")
                     continue
@@ -180,14 +184,17 @@ def preencher_recurso(recurso: Recurso) -> bool:
                 # custo unitário
                 Windows.digitar(taxa.custoUnitarioRecurso)
                 Windows.atalho(["tab"])
+            # fechar a aba das taxas
+            # SHIFT + PageUp Não funciona por algum motivo
             # retornar o foco para a aba dos recursos
-            Windows.atalho(["shift", "pageup"])
+            botoes = Windows.procurar_imagem(Imagens.botoes_padroes_abas.value, "0.8", 2)
+            Windows.clicar_mouse( botoes.transformar(*Offsets.botoes_padroes_abas.value) )
     else:
         # desativar
         custeadoDesmarcado = Windows.procurar_imagem(Imagens.recursos_custeado_desmarcado.value, "0.95")
         if not custeadoDesmarcado: Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_custeado.value) )
     
-    Logger.informar("Finalizado o preenchido de um Recurso")
+    Logger.informar(f"Finalizado o preenchido do Recurso '{ recurso.Geral.recurso }'")
     return True
 
 def abrir_organizacao_acn():
@@ -196,6 +203,21 @@ def abrir_organizacao_acn():
     assert coordenadas != None, "Aba das organizações não encontrada"
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_acn.value) )
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_ok.value) )
+
+def fechar_aplicativo_oracle(aplicativoOracle: Janela):
+    """Fechar a janela aberta do Aplicativo Oracle e aguardar o Edge voltar ao foco"""
+    Logger.informar("Fechando o Aplicativo Oracle")
+    tituloAplicativoOracle = aplicativoOracle.titulo()
+    
+    aplicativoOracle.fechar()
+    if Windows.titulo_janela_focada().lower() == tituloAplicativoOracle.lower():
+        Windows.atalho(["enter"])
+    
+    Windows.aguardar(
+        lambda: tituloAplicativoOracle.lower() != Windows.titulo_janela_focada(),
+        "O Aplicativo Oracle não foi fechado corretamente"
+    )
+    Logger.informar("Aplicativo Oracle fechado")
 
 def abrir_aplicativo_oracle(navegador: Navegador):
     """Clicar em `AUTOMACAO DCLICK`, `Recursos` e esperar o aplicativo oracle ficar focado"""
@@ -247,20 +269,39 @@ def main():
     Mapeamentos passo a passo se encontra no arquivo '../documentos/Mapeamentos de automação.txt'"""
     recursos = parse_recursos(CAMINHO_EXCEL)
     departamentos = parse_departamentos(CAMINHO_EXCEL)
+
+    # TODO - nome de recurso aleatorio para não dar conflito
+    from uuid import uuid4
+    for recurso in recursos:
+        recurso.Geral.recurso = uuid4().__str__().split("-")[0]
     
     try:
+        # abrir navegador no modo Internet Explorer
         with Navegador() as navegador:
+            # maximizar janela do navegador
+            # efetuar login no `SITE_EBS`
             Windows.janela_focada().maximizar()
             efetuar_login(navegador)
+            
+            # abrir o aplicativo oracle e maximiza-lo
+            # aguardar um tempo para iniciar corretamente
             abrir_aplicativo_oracle(navegador)
-            Windows.janela_focada().maximizar()
+            sleep(20)
+            janelaAplicativoOracle = Windows.janela_focada()
+            janelaAplicativoOracle.maximizar()
+            
+            # abrir as organizações Código 'ACN'
             abrir_organizacao_acn()
             
+            # realizar o preenchimento de cada recurso
             for recurso in recursos:
-                preenchido = preencher_recurso(recurso)
-                # salvar recurso ou apagar recurso com erro
-                if preenchido: Windows.atalho(["ctrl", "s"])
-                else: Windows.atalho(["f6"])
+                preenchidoSemErro = preencher_recurso(recurso)
+                if preenchidoSemErro: Windows.atalho(["ctrl", "s"])
+                # limpar para o próximo recurso
+                Windows.atalho(["f6"])
+            
+            # fechar o Aplicativo Oracle sutilmente
+            fechar_aplicativo_oracle(janelaAplicativoOracle)
 
     except (TimeoutException, TimeoutError) as erro:
         Logger.erro(f"Erro de timeout na espera de alguma condição/elemento/janela: { erro }")
