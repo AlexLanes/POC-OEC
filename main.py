@@ -219,7 +219,7 @@ def fechar_aplicativo_oracle(aplicativoOracle: Janela):
     )
     Logger.informar("Aplicativo Oracle fechado")
 
-def abrir_aplicativo_oracle(navegador: Navegador):
+def abrir_aplicativo_oracle_recurso(navegador: Navegador):
     """Clicar em `AUTOMACAO DCLICK`, `Recursos` e esperar o aplicativo oracle ficar focado"""
     Logger.informar("Abrindo o Aplicativo Oracle")
     # aba "AUTOMACAO DCLICK"
@@ -285,7 +285,7 @@ def main():
             
             # abrir o aplicativo oracle e maximiza-lo
             # aguardar um tempo para iniciar corretamente
-            abrir_aplicativo_oracle(navegador)
+            abrir_aplicativo_oracle_recurso(navegador)
             sleep(20)
             janelaAplicativoOracle = Windows.janela_focada()
             janelaAplicativoOracle.maximizar()
