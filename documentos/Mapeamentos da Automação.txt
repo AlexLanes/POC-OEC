@@ -36,7 +36,7 @@ Clicar na organização de código "ACN"
 Irá abrir a janela de "Recursos (ACN)"
 
 Inserir os dados na janela "Recursos (ACN)"
-Dados lidos do excel e mapeados na classe python "Recursos" "../src/planilhas"
+Dados lidos do excel e mapeados na classe python "parse_recursos" "../src/planilhas"
     Alguns campos ficam inacessíveis dependendo do tipo de recurso ou tipo do encargo
     Alguns CHECKBOXs ativam automaticamente dependendo do tipo de recurso ou tipo do encargo
 
@@ -91,7 +91,7 @@ Dados lidos do excel e mapeados na classe python "Recursos" "../src/planilhas"
     
         Ctrl + S para salvar o Recurso preenchido
         
-        Ctrl + SetaBaixo para abrir um Recurso limpo
+        F6 para abrir um Recurso limpo
 
 Fechar o Aplicativo Oracle
 
@@ -110,3 +110,30 @@ A janela de organizações irá aparecer "./screenshots/aba_organizacoes.png"
 Clicar na organização de código "ACN"
 
 Irá abrir a janela de "Departamentos (ACN)"
+
+Inserir os dados na janela "Departamentos (ACN)"
+Dados lidos do excel e mapeados na classe python "parse_departamentos" "../src/planilhas"
+
+    Para cada item na lista
+        item.Departamento.departamento -> janela.Departamento                       - INPUT
+
+        item.Departamento.descricao -> janela.Descrição                             - INPUT
+
+        item.Departamento.categoria_de_custo -> janela.Categoria de Custo           - INPUT
+
+        item.Departamento.local -> janela.Local                                     - INPUT
+    
+        item.Recursos -> janela.Recursos                                            - INPUTS
+            Para cada Recurso
+
+            item.Recursos[].recurso -> janela.Recurso                               - INPUT
+
+            item.Recursos[].disponibilizar_horas -> janela.Disponível 24 Horas      - CHECKBOX
+
+            item.Recursos[].unidades -> janela.Unidades                             - INPUT
+
+            Shift + PgUp para trocar o foco da aba dos Recursos para a anterior (Departamentos)
+    
+        Ctrl + S para salvar o Departamento preenchido
+        
+        F6 para abrir um Departamento limpo

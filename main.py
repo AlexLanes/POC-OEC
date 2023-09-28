@@ -30,9 +30,12 @@ class Localizadores(Enum):
 class Imagens(Enum):
     recursos = "./screenshots/aba_recursos.png"
     organizacoes = "./screenshots/aba_organizacoes.png"
+    departamentos = "./screenshots/aba_departamentos.png"
     erro_para_fechar = "./screenshots/erro_para_fechar.png"
     botoes_padroes_abas = "./screenshots/botoes_padroes_abas.png"
+    preocupacao = "./screenshots/preocupacao_departamentos_recursos.png"
     recursos_custeado_desmarcado = "./screenshots/aba_recursos_custeado.png"
+    aba_departamentos_recursos = "./screenshots/aba_departamentos_recursos.png"
     recursos_processamento_desmarcado = "./screenshots/aba_recursos_processamento_externo.png"
 
 @unique
@@ -48,9 +51,14 @@ class Offsets(Enum):
     recursos_descricao = (0.3, 0.115)
     recursos_custeado = (0.037, 0.495)
     recursos_taxa_padrao = (0.4, 0.53)
+    departamentos_local = (0.407, 0.48)
     recursos_tipo_encargo = (0.3, 0.205)
+    departamentos_recursos = (0.87, 0.92)
     recursos_conta_absorcao = (0.3, 0.58)
     recursos_conta_variacao = (0.3, 0.629)
+    departamentos_descricao = (0.45, 0.25)
+    departamentos_departamento = (0.45, 0.172)
+    departamentos_categoria_custo = (0.45, 0.33)
     recursos_processamento_externo = (0.037, 0.34)
     recursos_processamento_externo_item = (0.15, 0.40)
 
@@ -65,6 +73,86 @@ def fechar_possiveis_erros() -> bool:
         else: break
     return erroAtual > 1
 
+def preencher_departamento(departamento: Departamento) -> bool:
+    """Preencher a aba Departamentos com os dados do `departamento`.\n
+    Retornar um `bool` indicando se o departamento foi preenchido corretamente"""
+    Logger.informar("Iniciado o preenchimento de um Departamento")
+    coordenadas = Windows.procurar_imagem(Imagens.departamentos.value, segundosProcura=10)
+    assert coordenadas != None, "Aba dos Departamentos não encontrada"
+    
+    # departamento
+    # necessário validar se o departamento já existe ou está vazio
+    Windows.clicar_mouse( coordenadas.transformar(*Offsets.departamentos_departamento.value) )
+    Windows.digitar(departamento.Departamento.departamento)
+    Windows.atalho(["tab"])
+    if fechar_possiveis_erros() or departamento.Departamento.departamento == "":
+        Logger.avisar(f"Este departamento foi ignorado devido a falha do campo 'Departamento.departamento'. Departamento: { to_json(departamento.__dict__()) }")
+        return False
+    
+    # descrição
+    Windows.clicar_mouse( coordenadas.transformar(*Offsets.departamentos_descricao.value) )
+    Windows.digitar(departamento.Departamento.descricao)
+    
+    # categoria de custo
+    # necessário validar se existe a opção
+    Windows.clicar_mouse( coordenadas.transformar(*Offsets.departamentos_categoria_custo.value) )
+    Windows.digitar(departamento.Departamento.categoria_de_custo)
+    Windows.atalho(["tab"]) 
+    if fechar_possiveis_erros():
+        Logger.avisar(f"Este departamento foi ignorado devido a falha do campo 'Departamento.categoria_de_custo'. Departamento: { to_json(departamento.__dict__()) }")
+        return False
+    
+    # local
+    # necessário validar se existe a opção
+    # TODO - implementar uma checagem de mais pixeis ao redor do mouse na hora de checar pelo azul. O texto inserido dentro pode ficar na frente do azul
+    Windows.clicar_mouse( coordenadas.transformar(*Offsets.departamentos_local.value) )
+    Windows.digitar(departamento.Departamento.local)
+    Windows.atalho(["tab"]) 
+    if fechar_possiveis_erros() or Windows.rgb_mouse()[2] == 255:
+        print(Windows.rgb_mouse())
+        Logger.avisar(f"Este departamento foi ignorado devido a falha do campo 'Departamento.local'. Departamento: { to_json(departamento.__dict__()) }")
+        return False
+
+    # recursos
+    if len(departamento.Recursos) > 0:
+        # abrir a tela dos recursos
+        # aguardar carregar
+        Windows.clicar_mouse( coordenadas.transformar(*Offsets.departamentos_recursos.value) )
+        Windows.procurar_imagem(Imagens.aba_departamentos_recursos.value, segundosProcura=10)
+        # preencher os recursos
+        for recurso in departamento.Recursos:
+            # abrir um novo registro (não necessário para o primeiro, mas para os próximos)
+            # validação de campos e formatos
+            Windows.atalho(["ctrl", "down"])
+            if recurso.recurso == "" or not search(r"^\d+(,\d+)?$", recurso.unidades):
+                Logger.avisar(f"O recurso no index '{ departamento.Recursos.index(recurso) }' foi ignorado devido a uma falha de validação. Departamento: { to_json(departamento.__dict__()) }")
+                continue
+            # recurso
+            Windows.digitar(recurso.recurso)
+            Windows.atalho(["tab"]) 
+            if fechar_possiveis_erros():
+                Logger.avisar(f"Um recurso foi ignorado devido a falha do campo 'Recursos[{ departamento.Recursos.index(recurso) }].recurso'. Departamento: { to_json(departamento.__dict__()) }")
+                # limpar registro
+                Windows.atalho(["ctrl", "up"]) 
+                Windows.procurar_imagem(Imagens.preocupacao.value, segundosProcura=5)
+                Windows.atalho(["enter"]) 
+                continue
+            # disponível 24 horas
+            # padrão do checkbox é marcado
+            if not recurso.disponibilizar_horas:
+                Windows.atalho(["space"])
+            # unidades
+            Windows.atalho(["tab", "tab"])
+            Windows.digitar(recurso.unidades)
+        # fechar a aba dos recursos
+        # SHIFT + PageUp Não funciona por algum motivo
+        # retornar o foco para a aba dos departamentos
+        botoes = Windows.procurar_imagem(Imagens.botoes_padroes_abas.value, "0.8", 2)
+        Windows.clicar_mouse( botoes.transformar(*Offsets.botoes_padroes_abas.value) )
+
+    Logger.informar(f"Finalizado o preenchido do Departamento '{ departamento.Departamento.departamento }'")
+    return True
+
 def preencher_recurso(recurso: Recurso) -> bool:
     """Preencher a aba Recursos com os dados do `Recurso`.\n
     Retornar um `bool` indicando se o recurso foi preenchido corretamente"""
@@ -73,15 +161,15 @@ def preencher_recurso(recurso: Recurso) -> bool:
     assert coordenadas != None, "Aba dos Recursos não encontrada"
     
     # recurso
-    # necessário validar se o recurso já existe
+    # necessário validar se o recurso já existe ou está vazio
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_recurso.value) )
     Windows.digitar(recurso.Geral.recurso)
     Windows.atalho(["tab"])
-    if fechar_possiveis_erros():
+    if fechar_possiveis_erros() or recurso.Geral.recurso == "":
         Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.recurso'. Recurso: { to_json(recurso.__dict__()) }")
         return False
     
-    # descricao
+    # descrição
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_descricao.value) )
     Windows.digitar(recurso.Geral.descricao)
     
@@ -298,10 +386,12 @@ def main():
     recursos = parse_recursos(CAMINHO_EXCEL)
     departamentos = parse_departamentos(CAMINHO_EXCEL)
 
-    # # TODO - nome de recurso aleatorio para não dar conflito
+    # # TODO - nome de recurso e departamento aleatorio para não dar conflito
     # from uuid import uuid4
     # for recurso in recursos:
     #     recurso.Geral.recurso = uuid4().__str__().split("-")[0]
+    # for departamento in departamentos:
+    #     departamento.Departamento.departamento = uuid4().__str__().split("-")[0]
     
     try:
         # abrir navegador no modo Internet Explorer
@@ -310,6 +400,7 @@ def main():
             # efetuar login no `SITE_EBS`
             Windows.janela_focada().maximizar()
             efetuar_login(navegador)
+
             # abrir o aplicativo oracle
             abrir_aplicativo_oracle_recurso(navegador)
             # abrir a organização Código 'ACN'
@@ -323,11 +414,18 @@ def main():
                 Windows.atalho(["f6"])
             # fechar o Aplicativo Oracle sutilmente
             fechar_aplicativo_oracle()
+
             # abrir o aplicativo oracle e maximiza-lo
             abrir_aplicativo_oracle_departamento(navegador)
             # abrir a organização Código 'ACN'
             # maximizar a janela
             abrir_organizacao_acn()
+            # realizar o preenchimento de cada departamento
+            for departamento in departamentos:
+                preenchidoSemErro = preencher_departamento(departamento)
+                if preenchidoSemErro: Windows.atalho(["ctrl", "s"])
+                # limpar para o próximo departamento
+                Windows.atalho(["f6"])
             # fechar o Aplicativo Oracle sutilmente
             fechar_aplicativo_oracle()
 
