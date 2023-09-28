@@ -386,19 +386,20 @@ def main():
     recursos = parse_recursos(CAMINHO_EXCEL)
     departamentos = parse_departamentos(CAMINHO_EXCEL)
 
-    # # TODO - nome de recurso e departamento aleatorio para não dar conflito
-    # from uuid import uuid4
-    # for recurso in recursos:
-    #     recurso.Geral.recurso = uuid4().__str__().split("-")[0]
-    # for departamento in departamentos:
-    #     departamento.Departamento.departamento = uuid4().__str__().split("-")[0]
+    # TODO - nome de recurso e departamento aleatorio para não dar conflito
+    from uuid import uuid4
+    for recurso in recursos:
+        recurso.Geral.recurso = uuid4().__str__().split("-")[0]
+    for departamento in departamentos:
+        departamento.Departamento.departamento = uuid4().__str__().split("-")[0]
     
     try:
         # abrir navegador no modo Internet Explorer
         with Navegador() as navegador:
             # maximizar janela do navegador
             # efetuar login no `SITE_EBS`
-            Windows.janela_focada().maximizar()
+            janelaNavegador = Windows.janela_focada()
+            janelaNavegador.maximizar()
             efetuar_login(navegador)
 
             # abrir o aplicativo oracle
@@ -414,6 +415,10 @@ def main():
                 Windows.atalho(["f6"])
             # fechar o Aplicativo Oracle sutilmente
             fechar_aplicativo_oracle()
+
+            # focar a janela do navegador
+            janelaNavegador.focar()
+            sleep(5)
 
             # abrir o aplicativo oracle e maximiza-lo
             abrir_aplicativo_oracle_departamento(navegador)
@@ -440,6 +445,6 @@ def main():
         exit(1)
     
 if __name__ == "__main__":
-    Logger.informar("--- Iniciado execução do fluxo ---")
+    Logger.informar("### Iniciado execução do fluxo ###")
     main()
-    Logger.informar("--- Finalizado execução com sucesso ---")
+    Logger.informar("### Finalizado execução com sucesso ###")
