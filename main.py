@@ -36,6 +36,7 @@ class Imagens(Enum):
     preocupacao = "./screenshots/preocupacao_departamentos_recursos.png"
     recursos_custeado_desmarcado = "./screenshots/aba_recursos_custeado.png"
     aba_departamentos_recursos = "./screenshots/aba_departamentos_recursos.png"
+    erro_organizacoes_definidas = "./screenshots/erro_organizacoes_definidas.png"
     recursos_processamento_desmarcado = "./screenshots/aba_recursos_processamento_externo.png"
 
 @unique
@@ -291,6 +292,10 @@ def abrir_organizacao_acn():
     Maximizar a janela do Aplicativo Oracle"""
     Logger.informar(f"Maximizando janela focada '{ Windows.titulo_janela_focada() }'")
     Windows.janela_focada().maximizar()
+
+    # checando por erro fatal
+    erro = Windows.procurar_imagem(Imagens.erro_organizacoes_definidas.value, segundosProcura=5)
+    assert erro == None, "Erro das organizações não definidas encontrado" 
     
     Logger.informar("Abrindo a organização 'ACN'")
     coordenadas = Windows.procurar_imagem(Imagens.organizacoes.value, segundosProcura=60)
