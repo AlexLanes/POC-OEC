@@ -1,5 +1,7 @@
 Adicionar o site "https://o2qa.odebrecht.com" nos sites confiáveis em Internet Options -> Security -> Trusted Sites -> Sites
 Adicionar o site "https://o2qa.odebrecht.com" nos pop-ups confiáveis em Internet Options -> Privacy -> Pop-up Blocker -> Settings
+    Os passos acima são necessários para remover o erro "./screenshots/erro_java_tm_blocked.png" ao abrir o Aplicativo Oracle
+
 Adicionar o driver "../drivers/IEDriverServer.exe" no PATH das variáveis de ambiente
 
 ----------------------------------------
@@ -21,14 +23,7 @@ Clicar em "AUTOMACAO DCLICK"
 
 Clicar em "Recurso"
     selector = a#N55
-    quando aparecer o erro "./screenshots/erro_java_tm_blocked.png", clicar em "Run this time"
-        apertar "Tab" 3 vezes e apertar "Enter"
-        ou utilizar o PyAutoGui
-    clicar novamente em "Recursos"
     aguardar abrir uma nova aba
-    quando aparecer novamente o erro "./screenshots/erro_java_tm_blocked.png", clicar em "Run this time"
-        apertar "Tab" 3 vezes e apertar "Enter"
-        ou utilizar o PyAutoGui
 
 Aplicativo Oracle irá abrir
     se aparecer a imagem "./screenshots/erro_organizacoes_definidas.png", erro fatal
@@ -37,9 +32,6 @@ A janela de organizações irá aparecer "./screenshots/aba_organizacoes.png"
     o default observado selecionado é a organização de código "ACI"
 
 Clicar na organização de código "ACN"
-    apertar a "SetaBaixo" e "Enter"
-    ou utilizar o PyAutoGui
-    ou clicar no input de "Localizar", que já possui o caracter "%", digitar "ACN" e apertar "Enter"
 
 Irá abrir a janela de "Recursos (ACN)"
 
@@ -101,3 +93,20 @@ Dados lidos do excel e mapeados na classe python "Recursos" "../src/planilhas"
         
         Ctrl + SetaBaixo para abrir um Recurso limpo
 
+Fechar o Aplicativo Oracle
+
+Retornar a aba do Navegador Home
+
+Clicar em Departamento
+    selector = a#N61
+    aguardar abrir uma nova aba
+
+Aplicativo Oracle irá abrir
+    se aparecer a imagem "./screenshots/erro_organizacoes_definidas.png", erro fatal
+
+A janela de organizações irá aparecer "./screenshots/aba_organizacoes.png"
+    o default observado selecionado é a organização de código "ACI"
+
+Clicar na organização de código "ACN"
+
+Irá abrir a janela de "Departamentos (ACN)"

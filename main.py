@@ -18,6 +18,7 @@ SENHA = "senha123"
 class Localizadores(Enum):
     recurso = "a#N55"
     texto_login = "Login"
+    departamento = "a#N61"
     texto_home = "Home Page"
     senha = "input#passwordField"
     usuario = "input#usernameField"
@@ -198,18 +199,27 @@ def preencher_recurso(recurso: Recurso) -> bool:
     return True
 
 def abrir_organizacao_acn():
-    """Clicar na organização Código 'ACN' e depois em 'OK'"""
-    coordenadas = Windows.procurar_imagem(Imagens.organizacoes.value, segundosProcura=30)
+    """Clicar na organização Código 'ACN' e depois em 'OK'.\n
+    Maximizar a janela do Aplicativo Oracle"""
+    Logger.informar(f"Maximizando janela focada '{ Windows.titulo_janela_focada() }'")
+    Windows.janela_focada().maximizar()
+    
+    Logger.informar("Abrindo a organização 'ACN'")
+    coordenadas = Windows.procurar_imagem(Imagens.organizacoes.value, segundosProcura=60)
     assert coordenadas != None, "Aba das organizações não encontrada"
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_acn.value) )
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.organizacoes_ok.value) )
+    
+    sleep(1)
+    Logger.informar("Organização 'ACN' aberta")
 
-def fechar_aplicativo_oracle(aplicativoOracle: Janela):
+def fechar_aplicativo_oracle():
     """Fechar a janela aberta do Aplicativo Oracle e aguardar o Edge voltar ao foco"""
     Logger.informar("Fechando o Aplicativo Oracle")
-    tituloAplicativoOracle = aplicativoOracle.titulo()
+    tituloAplicativoOracle = Windows.titulo_janela_focada()
+    Windows.janela_focada().fechar()
+    sleep(1)
     
-    aplicativoOracle.fechar()
     if Windows.titulo_janela_focada().lower() == tituloAplicativoOracle.lower():
         Windows.atalho(["enter"])
     
@@ -219,8 +229,26 @@ def fechar_aplicativo_oracle(aplicativoOracle: Janela):
     )
     Logger.informar("Aplicativo Oracle fechado")
 
+def abrir_aplicativo_oracle_departamento(navegador: Navegador):
+    """Alterar a aba para a da `Home Page`, clicar em `Departamento` e esperar o aplicativo oracle ficar focado"""
+    Logger.informar("Abrindo o Aplicativo Oracle")
+    # fechar a aba aberta pelo Recurso e retornar para a Home Page
+    navegador.focar_aba()
+    navegador.fechar_aba()
+    sleep(1)
+    # elemento "Departamento"
+    elemento = navegador.encontrar("css selector", Localizadores.departamento.value)
+    assert elemento != None, "Elemento 'Departamento' não encontrado"
+    elemento.click()
+    # aguardar o Aplicativo Oracle
+    Windows.aguardar(
+        lambda: "edge" not in Windows.titulo_janela_focada().lower() and Localizadores.texto_aplicativo_oracle.value.lower() in Windows.titulo_janela_focada().lower(),
+        f"O Aplicativo Oracle não foi inicializado corretamente"
+    )
+    Logger.informar(f"Aplicativo Oracle aberto. Título '{ Windows.titulo_janela_focada() }'")
+
 def abrir_aplicativo_oracle_recurso(navegador: Navegador):
-    """Clicar em `AUTOMACAO DCLICK`, `Recursos` e esperar o aplicativo oracle ficar focado"""
+    """Clicar em `AUTOMACAO DCLICK`, `Recurso` e esperar o aplicativo oracle ficar focado"""
     Logger.informar("Abrindo o Aplicativo Oracle")
     # aba "AUTOMACAO DCLICK"
     elemento = navegador.encontrar("css selector", Localizadores.navegacao_dclick.value)
@@ -230,12 +258,12 @@ def abrir_aplicativo_oracle_recurso(navegador: Navegador):
     elemento = navegador.encontrar("css selector", Localizadores.recurso.value)
     assert elemento != None, "Elemento 'Recurso' não encontrado"
     elemento.click()
-    # aguardar o aplicativo oracle
+    # aguardar o Aplicativo Oracle
     Windows.aguardar(
-        lambda: Localizadores.texto_aplicativo_oracle.value.lower() in Windows.titulo_janela_focada().lower(),
-        f"O texto '{ Localizadores.texto_aplicativo_oracle.value }' não foi encontrado no titulo da janela focada"
+        lambda: "edge" not in Windows.titulo_janela_focada().lower() and Localizadores.texto_aplicativo_oracle.value.lower() in Windows.titulo_janela_focada().lower(),
+        f"O Aplicativo Oracle não foi inicializado corretamente"
     )
-    Logger.informar("Aplicativo Oracle aberto")
+    Logger.informar(f"Aplicativo Oracle aberto. Título '{ Windows.titulo_janela_focada() }'")
 
 def efetuar_login(navegador: Navegador):
     """Efetuar o login no `SITE_EBS` e esperar a página Home carregar"""
@@ -282,26 +310,26 @@ def main():
             # efetuar login no `SITE_EBS`
             Windows.janela_focada().maximizar()
             efetuar_login(navegador)
-            
-            # abrir o aplicativo oracle e maximiza-lo
-            # aguardar um tempo para iniciar corretamente
+            # abrir o aplicativo oracle
             abrir_aplicativo_oracle_recurso(navegador)
-            sleep(20)
-            janelaAplicativoOracle = Windows.janela_focada()
-            janelaAplicativoOracle.maximizar()
-            
-            # abrir as organizações Código 'ACN'
+            # abrir a organização Código 'ACN'
+            # maximizar a janela
             abrir_organizacao_acn()
-            
             # realizar o preenchimento de cada recurso
             for recurso in recursos:
                 preenchidoSemErro = preencher_recurso(recurso)
                 if preenchidoSemErro: Windows.atalho(["ctrl", "s"])
                 # limpar para o próximo recurso
                 Windows.atalho(["f6"])
-            
             # fechar o Aplicativo Oracle sutilmente
-            fechar_aplicativo_oracle(janelaAplicativoOracle)
+            fechar_aplicativo_oracle()
+            # abrir o aplicativo oracle e maximiza-lo
+            abrir_aplicativo_oracle_departamento(navegador)
+            # abrir a organização Código 'ACN'
+            # maximizar a janela
+            abrir_organizacao_acn()
+            # fechar o Aplicativo Oracle sutilmente
+            fechar_aplicativo_oracle()
 
     except (TimeoutException, TimeoutError) as erro:
         Logger.erro(f"Erro de timeout na espera de alguma condição/elemento/janela: { erro }")

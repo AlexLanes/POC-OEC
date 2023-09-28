@@ -23,7 +23,7 @@ class Navegador:
         self.options.attach_to_edge_chrome = True
         self.options.add_argument("--ignore-certificate-errors")
         self.options.edge_executable_path = CAMINHO_EDGE
-        self.TIMEOUT = 30
+        self.TIMEOUT = 120
     
     def __enter__(self):
         self.driver = Ie(self.options, Service())
@@ -43,8 +43,8 @@ class Navegador:
 
     def pesquisar(self, url: str):
         """Pesquisar o url na aba focada"""
-        self.driver.get(url)
         Logger.informar(f"Pesquisado o url '{ url }'")
+        self.driver.get(url)
 
     def nova_aba(self):
         """Abrir uma nova aba e alterar o foco para ela"""
@@ -52,11 +52,18 @@ class Navegador:
         Logger.informar("Aberto uma nova aba")
 
     def fechar_aba(self):
-        """Fechar a aba focada e alterar para a anterior"""
+        """Fechar a aba focada e alterar o foco para a anterior"""
         titulo = self.driver.title
         self.driver.close()
         self.driver.switch_to.window(self.abas[-1])
         Logger.informar(f"Fechado a aba '{ titulo }'")
+    
+    def focar_aba(self, aba: str = None):
+        """Focar na aba informada.\n
+        Default é a última aba `self.abas[-1]`"""
+        aba = self.abas[-1] if not aba else aba
+        self.driver.switch_to.window(aba)
+        Logger.informar(f"O navegador focou na aba '{ self.driver.title }'")
 
     @overload
     def encontrar(self, estrategia: ESTRATEGIAS, localizador: str) -> WebElement | None:
@@ -74,7 +81,7 @@ class Navegador:
     def aguardar(self, condicao: Callable[[], bool], mensagemErro: str = None):
         """Repete a condição até que resulte em `True` ou `TimeoutException` com a `mensagemErro`"""
         Logger.informar(f"Aguardando uma condição")
-        Wait(self.driver, self.TIMEOUT).until(lambda _: condicao(), mensagemErro)
+        Wait(self.driver, self.TIMEOUT / 2).until(lambda _: condicao(), mensagemErro)
         Logger.informar(f"Condição atendida")
 
 __all__ = [
