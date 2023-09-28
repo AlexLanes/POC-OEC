@@ -339,6 +339,8 @@ def abrir_aplicativo_oracle_departamento(navegador: Navegador):
         f"O Aplicativo Oracle não foi inicializado corretamente"
     )
     Logger.informar(f"Aplicativo Oracle aberto. Título '{ Windows.titulo_janela_focada() }'")
+    # TODO implementar a procura pelo erro do "../screenshots/erro_java_tm_blocked.png"
+    # informar os passos necessários para resolver o erro
 
 def abrir_aplicativo_oracle_recurso(navegador: Navegador):
     """Clicar em `AUTOMACAO DCLICK`, `Recurso` e esperar o aplicativo oracle ficar focado"""
@@ -357,6 +359,8 @@ def abrir_aplicativo_oracle_recurso(navegador: Navegador):
         f"O Aplicativo Oracle não foi inicializado corretamente"
     )
     Logger.informar(f"Aplicativo Oracle aberto. Título '{ Windows.titulo_janela_focada() }'")
+    # TODO implementar a procura pelo erro do "../screenshots/erro_java_tm_blocked.png"
+    # informar os passos necessários para resolver o erro
 
 def efetuar_login(navegador: Navegador):
     """Efetuar o login no `SITE_EBS` e esperar a página Home carregar"""
@@ -391,12 +395,12 @@ def main():
     recursos = parse_recursos(CAMINHO_EXCEL)
     departamentos = parse_departamentos(CAMINHO_EXCEL)
 
-    # TODO - nome de recurso e departamento aleatorio para não dar conflito
-    from uuid import uuid4
-    for recurso in recursos:
-        recurso.Geral.recurso = uuid4().__str__().split("-")[0]
-    for departamento in departamentos:
-        departamento.Departamento.departamento = uuid4().__str__().split("-")[0]
+    # # TODO - nome de recurso e departamento aleatorio para não dar conflito
+    # from uuid import uuid4
+    # for recurso in recursos:
+    #     recurso.Geral.recurso = uuid4().__str__().split("-")[0]
+    # for departamento in departamentos:
+    #     departamento.Departamento.departamento = uuid4().__str__().split("-")[0]
     
     try:
         # abrir navegador no modo Internet Explorer
