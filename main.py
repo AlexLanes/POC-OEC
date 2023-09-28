@@ -53,7 +53,7 @@ class Offsets(Enum):
     recursos_processamento_externo = (0.037, 0.34)
     recursos_processamento_externo_item = (0.15, 0.40)
 
-def fechar_possiveis_errors() -> bool:
+def fechar_possiveis_erros() -> bool:
     """Fechar possíveis erros na tela retornando um `bool` informando caso algum tenha sido encontrado e fechado"""
     erroAtual, errosMaximos = 1, 4
     while erroAtual <= errosMaximos:
@@ -76,7 +76,7 @@ def preencher_recurso(recurso: Recurso) -> bool:
     Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_recurso.value) )
     Windows.digitar(recurso.Geral.recurso)
     Windows.atalho(["tab"])
-    if fechar_possiveis_errors():
+    if fechar_possiveis_erros():
         Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Geral.recurso'. Recurso: { to_json(recurso.__dict__()) }")
         return False
     
@@ -133,7 +133,7 @@ def preencher_recurso(recurso: Recurso) -> bool:
         Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_processamento_externo_item.value) )
         Windows.digitar(recurso.ProcessamentoExterno.item)
         Windows.atalho(["tab"])
-        if fechar_possiveis_errors():
+        if fechar_possiveis_erros():
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'ProcessamentoExterno.item'. Recurso: { to_json(recurso.__dict__()) }")
             return False
     else:
@@ -152,7 +152,7 @@ def preencher_recurso(recurso: Recurso) -> bool:
         Windows.clicar_mouse( coordenadas.transformar(*Offsets.recursos_conta_absorcao.value) )
         Windows.digitar(recurso.Faturamento.contaAbsorcao)
         Windows.atalho(["tab"])
-        if fechar_possiveis_errors() or recurso.Faturamento.contaAbsorcao == "":
+        if fechar_possiveis_erros() or recurso.Faturamento.contaAbsorcao == "":
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaAbsorcao'. Recurso: { to_json(recurso.__dict__()) }")
             return False
         # conta de variação
@@ -160,7 +160,7 @@ def preencher_recurso(recurso: Recurso) -> bool:
         Windows.digitar(recurso.Faturamento.contaVariacao)
         if recurso.Faturamento.contaVariacao != "": 
             Windows.atalho(["tab"])
-        if fechar_possiveis_errors():
+        if fechar_possiveis_erros():
             Logger.avisar(f"Este recurso foi ignorado devido a falha do campo 'Faturamento.contaVariacao'. Recurso: { to_json(recurso.__dict__()) }")
             return False
         # taxas
@@ -177,7 +177,7 @@ def preencher_recurso(recurso: Recurso) -> bool:
                 # tipo de custo
                 Windows.digitar(taxa.tipoCusto)
                 Windows.atalho(["tab"])
-                if fechar_possiveis_errors():
+                if fechar_possiveis_erros():
                     Windows.atalho(["ctrl", "up"]) # limpar registro
                     Logger.avisar(f"Uma taxa foi ignorada devido a falha do campo 'Taxas[{ recurso.Taxas.index(taxa) }].tipoCusto'. Recurso: { to_json(recurso.__dict__()) }")
                     continue
@@ -270,10 +270,10 @@ def main():
     recursos = parse_recursos(CAMINHO_EXCEL)
     departamentos = parse_departamentos(CAMINHO_EXCEL)
 
-    # TODO - nome de recurso aleatorio para não dar conflito
-    from uuid import uuid4
-    for recurso in recursos:
-        recurso.Geral.recurso = uuid4().__str__().split("-")[0]
+    # # TODO - nome de recurso aleatorio para não dar conflito
+    # from uuid import uuid4
+    # for recurso in recursos:
+    #     recurso.Geral.recurso = uuid4().__str__().split("-")[0]
     
     try:
         # abrir navegador no modo Internet Explorer
